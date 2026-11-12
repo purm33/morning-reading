@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>독서 아침활동 (교사)</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+:root{--accent:var(--read);--soft:var(--read-soft)}
+.wrap{max-width:1240px}
+.top .right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{border:2px solid var(--line);background:var(--card);border-radius:14px 14px 0 0;padding:8px 20px;font-family:'Jua';font-size:19px;color:var(--muted)}
+.tab.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+select{border:2px solid var(--line);border-radius:12px;padding:6px 10px;font-size:17px;background:#fff}
+.sum{font-family:'Jua';font-size:28px}
+.sum small{font-size:18px;color:var(--muted)}
+.nums{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:8px}
+.nb{border:2px solid var(--line);background:#fff;border-radius:14px;padding:6px 0;text-align:center;font-family:'Jua';font-size:20px;color:var(--muted);line-height:1.2}
+.nb small{display:block;font-size:13px}
+.nb.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.nb.sel{outline:3px solid var(--ink)}
+.bookline{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.bookline .e{font-size:40px}
+.bookline .t{font-family:'Jua';font-size:26px;color:var(--read)}
+.qhead{font-family:'Jua';font-size:20px;color:var(--read);margin:18px 0 8px;display:flex;gap:8px}
+.qhead .n{flex:none;color:#fff;background:var(--read);width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:17px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.wc{background:#fff;border:2px solid var(--line);border-radius:16px;padding:10px 14px}
+.wc .hd{display:flex;align-items:center;gap:8px;font-family:'Jua';margin-bottom:4px}
+.wc .hd .n{background:var(--accent);color:#fff;border-radius:999px;padding:0 10px}
+.wc .hd .m{margin-left:auto;font-size:14px;color:var(--muted);font-family:'Gowun Dodum'}
+.wc .tx{white-space:pre-wrap;font-size:17px;line-height:1.8}
+.big .wc .tx{font-size:24px}
+.big .qhead{font-size:26px}
+.scroll{overflow-x:auto;border-radius:12px}
+table{width:100%;border-collapse:collapse;background:#fff}
+table.acc{font-size:14px;min-width:900px}
+table.acc th,table.acc td{padding:4px 3px;border-bottom:1px solid var(--line);border-right:1px solid #f1ebe1;text-align:center}
+table.acc th{background:var(--read-soft);font-family:'Jua';font-weight:400;font-size:13px;line-height:1.25}
+table.acc td.num{font-family:'Jua';font-size:16px;position:sticky;left:0;background:#fff}
+table.acc td.y{color:var(--ok);font-weight:700}
+table.acc td.n0{color:#d8cfc2}
+table.acc td.future{background:#faf8f4;color:#e3ddd3}
+table.acc tr.rate td{font-family:'Jua';background:#fbf3ec}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">📚 독서 아침활동 · 교사</div>
+    <div class="right">
+      <span class="muted" id="live" style="font-size:15px">연결 중…</span>
+      <span class="muted" id="rosterInfo" style="font-size:15px"></span>
+      <button class="btn solid" id="xlsx" style="background:#1f7a46;border-color:#1f7a46">📥 엑셀 내려받기</button>
+    </div>
+  </div>
+  <div id="warn"></div>
+  <div class="tabs"><button class="tab on" data-v="day">📅 날짜별 보기</button><button class="tab" data-v="acc">📊 누적 보기</button></div>
+
+  <div id="vDay">
+    <div class="bar">
+      <select id="dsel"></select>
+      <button class="btn" id="tday">오늘</button>
+      <button class="btn" id="pvBtn">👀 학생 화면 미리보기</button>
+    </div>
+    <div class="card" id="bookCard"></div>
+    <div class="card">
+      <div class="sum" id="sum"></div>
+      <div class="muted" style="font-size:15px;margin:4px 0 10px">번호를 누르면 그 학생의 답만 볼 수 있어요. 아래 숫자는 세 답의 글자 수 합계예요.</div>
+      <div class="nums" id="nums"></div>
+    </div>
+    <div class="card">
+      <div class="bar" style="margin-bottom:4px">
+        <h3 style="margin:0">💭 학생들의 생각</h3>
+        <span style="margin-left:auto;display:flex;gap:6px">
+          <button class="btn" id="byQ">질문별로 보기</button><button class="btn" id="byS">학생별로 보기</button>
+          <button class="btn" id="bigBtn">🔍 크게 보기</button></span>
+      </div>
+      <div id="detail"></div>
+    </div>
+  </div>
+
+  <div id="vAcc" hidden>
+    <div class="card">
+      <h3>📊 날짜별 제출 현황 <span class="muted" style="font-size:15px">○ 제출 · 숫자는 세 답 글자 수 합계</span></h3>
+      <div class="scroll"><table class="acc" id="acc"></table></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="firebase-config.js"></script>
+<script src="books.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2400)}
+function tm(ts){if(!ts)return '';const d=new Date(ts);return `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`}
+function short(k){const d=dObj(k);return `${d.getMonth()+1}/${d.getDate()}`}
+
+let db=null;
+try{ if(window.FIREBASE_CONFIG){firebase.initializeApp(window.FIREBASE_CONFIG);db=firebase.database();} }catch(e){}
+if(!db) $('warn').innerHTML='<div class="notice err">⚠️ 파이어베이스 설정이 없어서 제출 현황을 불러올 수 없어요.</div>';
+
+const N=STUDENTS.length;
+$('rosterInfo').textContent=`우리 반 ${N}명 (${STUDENT_LABEL})`;
+const TODAY=seoulToday();
+function defaultDate(){if(SCHED[TODAY])return TODAY;const p=DATES.filter(d=>d<=TODAY);return p.length?p[p.length-1]:DATES[0]}
+
+let ALL={}, VIEW='day', DATE=defaultDate(), OPEN=null, MODE='q';
+if(db){
+  db.ref('reading').on('value',s=>{ALL=s.val()||{};$('live').textContent='● 실시간 반영 중';redraw()},
+    e=>{$('live').textContent='불러오기 실패';$('warn').innerHTML='<div class="notice err">⚠️ 기록을 불러오지 못했어요. 파이어베이스 데이터베이스 규칙에 reading 항목이 들어갔는지 확인해 주세요.</div>'});
+}
+
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{VIEW=b.dataset.v;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));$('vDay').hidden=VIEW!=='day';$('vAcc').hidden=VIEW!=='acc';redraw()});
+function redraw(){ VIEW==='day'?drawDay():drawAcc(); }
+
+/* ========== 날짜별 ========== */
+$('dsel').innerHTML=DATES.map(d=>`<option value="${d}">${nice(d)} · ${esc(SCHED[d].t)}</option>`).join('');
+$('dsel').onchange=()=>setDate($('dsel').value);
+$('tday').onclick=()=>setDate(defaultDate());
+$('pvBtn').onclick=()=>{location.href='index.html#p'+DATE.replace(/-/g,'')};
+$('byQ').onclick=()=>{MODE='q';drawDay()}; $('byS').onclick=()=>{MODE='s';drawDay()};
+$('bigBtn').onclick=()=>$('detail').classList.toggle('big');
+function setDate(d){DATE=d;$('dsel').value=d;OPEN=null;drawDay()}
+
+function drawDay(){
+  const b=SCHED[DATE], S=ALL[DATE]||{};
+  $('bookCard').innerHTML=`<div class="bookline"><span class="e">${b.e}</span><div><div class="t">${esc(b.t)}</div><div class="muted">${esc(b.a)} · ${esc(b.i)}</div></div></div>
+    <details style="margin-top:8px"><summary style="cursor:pointer;font-family:Jua;color:var(--read)">줄거리 · 질문 보기</summary>
+    ${b.s.map(p=>`<p style="line-height:1.9">${esc(p)}</p>`).join('')}<ol>${b.q.map(q=>`<li>${esc(q)}</li>`).join('')}</ol></details>`;
+  const done=Object.keys(S).filter(n=>STUDENTS.includes(n)).sort((a,b)=>a-b);
+  const tot=n=>S[n]&&S[n].a?S[n].a.reduce((x,y)=>x+countChars(y),0):0;
+  $('sum').innerHTML=`${done.length} / ${N}명 제출 <small>(미제출: ${STUDENTS.filter(n=>!S[n]).join(', ')||'없음'})</small>`;
+  $('nums').innerHTML=STUDENTS.map(n=>`<button class="nb ${S[n]?'on':''} ${OPEN===n?'sel':''}" data-n="${n}">${n}<small>${S[n]?tot(n)+'자':'&nbsp;'}</small></button>`).join('');
+  $('nums').querySelectorAll('.nb').forEach(x=>x.onclick=()=>{const n=x.dataset.n;OPEN=S[n]&&OPEN!==n?n:null;drawDay()});
+  $('byQ').classList.toggle('solid',MODE==='q'); $('byS').classList.toggle('solid',MODE==='s');
+  const ns=done.filter(n=>!OPEN||n===OPEN);
+  let h=OPEN?`<div style="margin:6px 0"><button class="btn" id="all">← 전체 학생 보기</button></div>`:'';
+  if(!ns.length) h+='<div class="muted" style="margin-top:8px">아직 제출한 학생이 없어요.</div>';
+  else if(MODE==='q'&&!OPEN){
+    h+=b.q.map((q,j)=>`<div class="qhead"><span class="n">${j+1}</span><span>${esc(q)}</span></div>
+      <div class="cards">${ns.map(n=>`<div class="wc"><div class="hd"><span class="n">${n}번</span></div><div class="tx">${esc((S[n].a||[])[j]||'')}</div></div>`).join('')}</div>`).join('');
+  } else {
+    h+=`<div class="cards" style="margin-top:8px">${ns.map(n=>`<div class="wc"><div class="hd"><span class="n">${n}번</span><span class="m">${tm(S[n].ts)} 제출 · ${tot(n)}자</span></div>
+      ${b.q.map((q,j)=>`<div style="font-family:Jua;color:var(--read);margin-top:6px">${j+1}번 질문</div><div class="tx">${esc((S[n].a||[])[j]||'')}</div>`).join('')}</div>`).join('')}</div>`;
+  }
+  $('detail').innerHTML=h;
+  if($('all')) $('all').onclick=()=>{OPEN=null;drawDay()};
+}
+
+/* ========== 누적 ========== */
+function drawAcc(){
+  const past=d=>d<=TODAY;
+  let h=`<tr><th>번호</th>${DATES.map(d=>`<th title="${esc(SCHED[d].t)}">${short(d)}<br>${esc(SCHED[d].t.slice(0,5))}</th>`).join('')}<th>제출</th></tr>`;
+  STUDENTS.forEach(n=>{let c=0;
+    h+=`<tr><td class="num">${n}</td>${DATES.map(d=>{const s=ALL[d]&&ALL[d][n];if(s){c++;return `<td class="y">○<div style="font-size:11px;font-weight:400;color:var(--muted)">${(s.a||[]).reduce((x,y)=>x+countChars(y),0)}</div></td>`}return `<td class="${past(d)?'n0':'future'}">${past(d)?'·':''}</td>`}).join('')}<td style="font-family:Jua">${c}</td></tr>`});
+  h+=`<tr class="rate"><td>제출률</td>${DATES.map(d=>{if(!past(d))return '<td></td>';const c=STUDENTS.filter(n=>ALL[d]&&ALL[d][n]).length;return `<td>${Math.round(c/N*100)}%</td>`}).join('')}<td></td></tr>`;
+  $('acc').innerHTML=h;
+}
+
+/* ========== 엑셀 ========== */
+$('xlsx').onclick=()=>{
+  if(typeof XLSX==='undefined'){toast('엑셀 도구를 불러오지 못했어요. 새로고침 후 다시 눌러 주세요');return}
+  const wb=XLSX.utils.book_new();
+  const head=['번호',...DATES.map(d=>`${short(d)} ${SCHED[d].t}`),'제출 횟수'];
+  const rows=STUDENTS.map(n=>{let c=0;return [Number(n),...DATES.map(d=>{const s=ALL[d]&&ALL[d][n];if(s){c++;return 'O'}return d<=TODAY?'X':''}),c]});
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([head,...rows]),'제출 현황');
+  const rows2=[['날짜','책','번호','질문1 답','질문2 답','질문3 답','글자 수 합계','제출 시각']];
+  DATES.forEach(d=>STUDENTS.forEach(n=>{const s=ALL[d]&&ALL[d][n];if(!s)return;const a=s.a||[];
+    rows2.push([nice(d),SCHED[d].t,Number(n),a[0]||'',a[1]||'',a[2]||'',a.reduce((x,y)=>x+countChars(y),0),s.ts?new Date(s.ts).toLocaleString('ko-KR'):''])}));
+  const ws2=XLSX.utils.aoa_to_sheet(rows2); ws2['!cols']=[{wch:16},{wch:22},{wch:6},{wch:50},{wch:50},{wch:50},{wch:10},{wch:20}];
+  XLSX.utils.book_append_sheet(wb,ws2,'학생 답 전체');
+  const rows3=[['날짜','책','질문1','질문2','질문3']];DATES.forEach(d=>rows3.push([nice(d),SCHED[d].t,...SCHED[d].q]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows3),'질문 목록');
+  XLSX.writeFile(wb,`독서아침활동_기록_${TODAY}.xlsx`);
+};
+
+setDate(DATE);
+</script>
+</body>
+</html>

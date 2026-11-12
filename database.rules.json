@@ -1,0 +1,33 @@
+{
+  "rules": {
+    "morning": {
+      ".read": true,
+      ".write": "now >= 1798988400000 && !newData.exists()",
+      "$date": {
+        ".validate": "$date.matches(/^20[0-9][0-9]-[01][0-9]-[0-3][0-9]$/)",
+        "$num": {
+          ".validate": "$num.matches(/^([1-9]|1[0-2]|5[1-9]|6[0-3])$/)",
+          "$type": {
+            ".write": "now < 1798729200000 && newData.exists()",
+            ".validate": "($type === 'idiom' || $type === 'eng' || $type === 'write') && newData.hasChild('ts')"
+          },
+          "math": {
+            ".write": "now < 1798729200000 && !data.exists() && newData.exists()",
+            ".validate": "newData.hasChildren(['answers', 'score', 'ts'])"
+          }
+        }
+      }
+    },
+    "reading": {
+      ".read": true,
+      ".write": "now >= 1798988400000 && !newData.exists()",
+      "$date": {
+        ".validate": "$date.matches(/^20[0-9][0-9]-[01][0-9]-[0-3][0-9]$/)",
+        "$num": {
+          ".write": "now < 1798729200000 && newData.exists()",
+          ".validate": "$num.matches(/^([1-9]|1[0-2]|5[1-9]|6[0-3])$/) && newData.hasChildren(['a', 'ts'])"
+        }
+      }
+    }
+  }
+}
