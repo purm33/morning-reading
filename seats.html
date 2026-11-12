@@ -173,7 +173,11 @@ const save=()=>LS.set('seats-v1',JSON.stringify(S));
 let TOOL='swap', PICK=null, HID=new Set(), WAIT=new Set(), BUSY=false, RUN=0;
 
 const sig=()=>S.mode==='pair'?`p${S.rows}x${S.cols}`:`g${S.groups}`;
-function sizes(){const b=Math.floor(N/S.groups),x=N%S.groups;return Array.from({length:S.groups},(_,g)=>b+(g<x?1:0))}
+/* 남는 인원은 4모둠부터 한 명씩 더 들어가요 (6모둠·25명 → 4모둠만 5명) */
+function sizes(){const G=S.groups,b=Math.floor(N/G),x=N%G,st=Math.min(3,G-1);return Array.from({length:G},(_,g)=>b+(((g-st+G)%G)<x?1:0))}
+/* 자리 채우는 순서: 짝 자리는 분단별로 위에서 아래로 (1·2 → 3·4 → 5·6 …), 모둠은 1모둠부터 */
+function fillOrder(){const M=seatsGeo().length;if(S.mode!=='pair')return [...Array(M).keys()];
+  const L=[];for(let p=0;p<S.cols;p++)for(let r=0;r<S.rows;r++){const i=r*S.cols*2+p*2;L.push(i,i+1)}return L}
 /* 자리 목록: {g: 같은 짝/모둠 번호, r: 줄(짝 자리만)} */
 function seatsGeo(){
   if(S.mode==='pair'){const L=[];for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols*2;c++)L.push({r,c,g:r*S.cols+Math.floor(c/2)});return L}
@@ -224,7 +228,7 @@ function solve(){
 function doShuffle(){
   if(BUSY)return; const r=solve(); if(r.err){toast(r.err);return}
   const c=cur(); BUSY=true;
-  const filled=r.A.map((n,i)=>n&&!c.lock.includes(i)?i:-1).filter(i=>i>=0);
+  const filled=fillOrder().filter(i=>r.A[i]&&!c.lock.includes(i));
   let msg=''; if(r.hard) msg+=`⚠️ 조건(섞이면 안 되는 사이·성별·앞자리)을 ${r.hard}군데 맞추지 못했어요. 한 번 더 눌러 보거나, 고정한 자리·빈자리를 줄여 보세요. `;
   if(r.prevOn) msg+= r.soft?`지난번과 같은 짝·모둠이 ${r.soft}쌍 있어요.`:'지난번과 겹치는 짝·모둠이 없어요 👍';
   if(S.reveal){c.A=r.A;HID=new Set(filled);BUSY=false;render();$('msg').innerHTML=msg?`<div class="notice">${msg}</div>`:'';commit();return}
