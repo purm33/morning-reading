@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>자리바꾸기 · 우리 반 홈페이지</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+:root{--accent:var(--eng);--soft:var(--eng-soft)}
+.wrap{max-width:1240px}
+.layout{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:1fr}}
+.panel .row{margin-bottom:14px}
+.panel label.h{display:block;font-family:'Jua';font-size:17px;margin-bottom:6px}
+.seg{display:flex;background:#fff;border:2px solid var(--line);border-radius:999px;padding:3px;gap:3px}
+.seg button{flex:1;border:none;background:none;border-radius:999px;padding:6px 6px;font-family:'Jua';font-size:15px;color:var(--muted);white-space:nowrap}
+[hidden]{display:none!important}
+.seg button.on{background:var(--eng);color:#fff}
+.nsel{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:16px}
+.nsel select{border:2px solid var(--line);border-radius:10px;padding:4px 8px;font-size:16px;background:#fff}
+.panel input[type=text]{font-size:16px;padding:7px 10px}
+.panel .tip{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.45}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:16px;cursor:pointer}
+.chk input{width:18px;height:18px;margin-top:3px}
+.go{width:100%;font-size:26px;padding:12px 0;margin-top:4px}
+.board-wrap{position:relative}
+.stage{background:#fff;border:2px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 3px 0 var(--line)}
+.desk{margin:0 auto 18px;width:46%;min-width:220px;text-align:center;font-family:'Jua';font-size:20px;color:#fff;background:linear-gradient(#7a5a3e,#5b4029);border-radius:12px;padding:8px 0;box-shadow:0 4px 0 #3e2b1b}
+.board{display:flex;flex-direction:column;gap:14px}
+.board.flip{flex-direction:column-reverse}
+.board.flip .rowp{flex-direction:row-reverse}
+.board.flip .pair{flex-direction:row-reverse}
+.rowp{display:flex;justify-content:center;gap:34px}
+.pair{display:flex;gap:6px;padding:6px;border-radius:16px;background:#f3ede3}
+.seat{position:relative;width:92px;height:74px;border-radius:14px;border:3px solid #d9cdbb;background:#fffdf8;display:flex;align-items:center;justify-content:center;font-family:'Jua';font-size:36px;color:var(--ink);cursor:pointer;user-select:none;transition:transform .12s}
+.seat:hover{transform:translateY(-2px)}
+.seat small{font-size:16px;margin-left:1px;color:var(--muted)}
+.seat.empty{color:#d4c8b6;font-size:18px}
+.seat.off{background:repeating-linear-gradient(45deg,#f1ece4,#f1ece4 6px,#e8e1d6 6px,#e8e1d6 12px);border-style:dashed;color:#bdb2a2;font-size:15px}
+.seat.lock{border-color:#e0a83a;background:#fff7e3}
+.seat.lock::after{content:'🔒';position:absolute;top:-10px;right:-8px;font-size:17px}
+.seat.pick{outline:4px solid var(--eng);outline-offset:2px}
+.seat.hid{background:linear-gradient(135deg,#5b8fd0,#2f6db8);border-color:#24578f;color:#fff;font-size:38px}
+.seat.pop{animation:pop .45s ease}
+@keyframes pop{0%{transform:scale(.6) rotateY(90deg)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+.seat.warn{border-color:var(--bad);background:#fff1ef}
+.showg .seat.gm:not(.hid){background:#e6f0fc;border-color:#9fc0e8}
+.showg .seat.gf:not(.hid){background:#fde9ef;border-color:#eeb0c4}
+.showg .seat.gm.lock,.showg .seat.gf.lock{border-color:#e0a83a}
+.gchip{border:2px solid var(--line);border-radius:10px;min-width:38px;padding:2px 4px;font-family:'Jua';font-size:15px;background:#fff;color:var(--muted)}
+.gchip.m{background:#e6f0fc;border-color:#9fc0e8;color:#2f6db8}
+.gchip.f{background:#fde9ef;border-color:#eeb0c4;color:#c0456e}
+.apchip{background:#fff1ef;border:2px solid #f0b8ae;border-radius:999px;padding:1px 4px 1px 10px;font-family:'Jua';font-size:15px;display:inline-flex;align-items:center;gap:4px}
+.apchip button{border:none;background:none;color:var(--bad);font-size:16px;padding:0 4px}
+.groups{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.board.flip .groups{direction:rtl}
+.board.flip .gbox{direction:ltr}
+@media (max-width:1100px){.groups{grid-template-columns:repeat(2,1fr)}}
+.gbox{border-radius:20px;padding:10px 12px 14px;background:var(--gc,#eef4fb);border:2px solid rgba(0,0,0,.06)}
+.gbox .gt{font-family:'Jua';font-size:19px;margin-bottom:8px;color:#3d3a36}
+.gbox .gs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.gbox .seat{width:84px;height:68px}
+.bar2{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.bar2 .info{font-family:'Jua';font-size:18px}
+.notice{margin-top:12px}
+.hist{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow:auto}
+.hist button{text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:6px 10px;font-size:15px}
+.hist button:hover{border-color:var(--eng)}
+.big .seat{width:120px;height:92px;font-size:46px}
+.big .gbox .seat{width:110px;height:86px}
+@media print{
+  body{background:#fff} .panel,.bar2,.notice,.top{display:none!important}
+  .layout{display:block} .stage{border:none;box-shadow:none}
+  .seat.hid{background:#fff;color:var(--ink)}
+}
+</style>
+</head>
+<body data-tab="seats">
+<script src="nav.js"></script>
+<div class="wrap">
+  <div class="layout">
+    <div class="card panel">
+      <h3>🪑 자리바꾸기 설정</h3>
+      <div class="row"><label class="h">배치 방법</label>
+        <div class="seg" id="mode"><button data-m="pair">👫 짝 자리</button><button data-m="group">👥 모둠 자리</button></div>
+        <div class="nsel" id="pairSel">줄 <select id="rows"></select> 분단 <select id="cols"></select></div>
+        <div class="nsel" id="grpSel" hidden>모둠 수 <select id="groups"></select> <span class="muted" id="gsize" style="font-size:14px"></span></div>
+      </div>
+      <div class="row" id="pairRuleRow"><label class="h">짝 정하기</label>
+        <div class="seg" id="pairRule"><button data-r="any">상관없이</button><button data-r="mix">👦👧 남녀 짝</button><button data-r="same">같은 성끼리</button></div>
+        <div class="tip" id="pairRuleTip"></div></div>
+      <div class="row" id="grpRuleRow" hidden><label class="h">모둠 정하기</label>
+        <div class="seg" id="grpRule"><button data-r="any">상관없이</button><button data-r="mix">👦👧 남녀 골고루</button></div></div>
+      <div class="row"><label class="h">🚫 섞이면 안 되는 사이</label>
+        <div class="nsel" style="margin-top:0"><select id="apA"></select> 와(과) <select id="apB"></select> <button class="btn" id="apAdd" style="padding:3px 12px">추가</button></div>
+        <div id="apList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+        <div class="tip">같은 짝·같은 모둠이 되지 않게 해요.</div></div>
+      <div class="row"><label class="h">👦👧 성별 <span class="muted" style="font-family:'Gowun Dodum';font-size:13px">(번호를 누르면 바뀌어요)</span></label>
+        <div id="gChips" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+        <div class="tip" id="gSum"></div>
+        <label class="chk" style="margin-top:6px;font-size:15px"><input type="checkbox" id="showG"> 자리판에 성별 색 표시</label></div>
+      <div class="row" id="frontRow"><label class="h">앞쪽 두 줄에 앉을 번호</label>
+        <input type="text" id="front" placeholder="예: 4, 58">
+        <div class="tip">칠판이 잘 보여야 하는 학생 등. 쉼표로 구분해요.</div></div>
+      <div class="row">
+        <label class="chk"><input type="checkbox" id="avoid"> 지난번 짝·모둠과 되도록 겹치지 않게</label>
+        <label class="chk" style="margin-top:6px"><input type="checkbox" id="reveal"> 한 자리씩 눌러서 공개하기 🎁</label>
+      </div>
+      <button class="btn solid go" id="shuffle">🎲 자리 바꾸기</button>
+      <div class="row" style="margin-top:16px"><label class="h">자리판 고치기 <span class="muted" style="font-family:'Gowun Dodum';font-size:13px">(자리를 눌러요)</span></label>
+        <div class="seg" id="tool"><button data-t="swap">↔ 바꾸기</button><button data-t="lock">🔒 고정</button><button data-t="off">🚫 빈자리</button></div>
+        <div class="tip" id="toolTip"></div></div>
+      <div class="row"><label class="h">🗂️ 지난 자리 기록</label><div class="hist" id="hist"></div></div>
+    </div>
+
+    <div class="board-wrap">
+      <div class="bar2">
+        <span class="info" id="info"></span>
+        <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn" id="showAll" hidden>🎉 모두 공개</button>
+          <button class="btn" id="flipBtn">🔄 교사 시점</button>
+          <button class="btn" id="bigBtn">🔍 크게</button>
+          <button class="btn" id="fsBtn">⛶ 전체 화면</button>
+          <button class="btn" id="printBtn">🖨️ 인쇄</button>
+        </span>
+      </div>
+      <div class="stage" id="stage">
+        <div class="desk" id="deskTop">교탁 · 칠판</div>
+        <div class="board" id="board"></div>
+        <div class="desk" id="deskBot" hidden style="margin:18px auto 0">교탁 · 칠판</div>
+      </div>
+      <div id="msg"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="books.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2400)}
+const N=STUDENTS.length;
+const GC=['#fde8e4','#fff1d6','#e3f3e6','#e2eefb','#efe6fa','#fde6f1','#e5f6f6','#f3efe2'];
+
+/* ---------- 상태 ---------- */
+/* 성별 기본값: 1~12번 남, 51~63번 여 (화면에서 눌러 바꿀 수 있어요) */
+const GDEF={};STUDENTS.forEach(n=>GDEF[n]=Number(n)<50?'m':'f');
+const DEF={mode:'pair',rows:5,cols:3,groups:6,apartL:[],front:'',avoid:true,reveal:false,flip:false,cur:{},hist:[],gender:GDEF,pairRule:'any',grpRule:'any',showG:true};
+let S=Object.assign({},DEF,(()=>{try{return JSON.parse(LS.get('seats-v1')||'{}')}catch(e){return {}}})());
+STUDENTS.forEach(n=>{if(!S.gender[n])S.gender[n]=GDEF[n]});
+const save=()=>LS.set('seats-v1',JSON.stringify(S));
+let TOOL='swap', PICK=null, HID=new Set(), BUSY=false;
+
+const sig=()=>S.mode==='pair'?`p${S.rows}x${S.cols}`:`g${S.groups}`;
+function sizes(){const b=Math.floor(N/S.groups),x=N%S.groups;return Array.from({length:S.groups},(_,g)=>b+(g<x?1:0))}
+/* 자리 목록: {g: 같은 짝/모둠 번호, r: 줄(짝 자리만)} */
+function seatsGeo(){
+  if(S.mode==='pair'){const L=[];for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols*2;c++)L.push({r,c,g:r*S.cols+Math.floor(c/2)});return L}
+  const L=[];sizes().forEach((n,g)=>{for(let k=0;k<n;k++)L.push({g,r:0})});return L;
+}
+function cur(){let c=S.cur[S.mode];const M=seatsGeo().length;
+  if(!c||c.sig!==sig()){c={sig:sig(),A:Array(M).fill(null),lock:[],off:[]};S.cur[S.mode]=c}
+  return c}
+const parseList=s=>String(s||'').split(/[,\s]+/).map(x=>x.trim()).filter(x=>STUDENTS.includes(x));
+const pk=(a,b)=>Number(a)<Number(b)?a+'-'+b:b+'-'+a;
+function togetherSet(A,geo){const by={};A.forEach((n,i)=>{if(n){(by[geo[i].g]=by[geo[i].g]||[]).push(n)}});const s=new Set();
+  Object.values(by).forEach(L=>{for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++)s.add(pk(L[i],L[j]))});return s}
+
+/* ---------- 뽑기 ---------- */
+function solve(){
+  const c=cur(), geo=seatsGeo(), M=geo.length;
+  const off=new Set(c.off), locks=new Set(c.lock.filter(i=>c.A[i]&&!off.has(i)));
+  const lockedNums=new Set([...locks].map(i=>c.A[i]));
+  const pool=STUDENTS.filter(n=>!lockedNums.has(n));
+  const free=[...Array(M).keys()].filter(i=>!off.has(i)&&!locks.has(i));
+  if(free.length<pool.length) return {err:`자리가 ${pool.length-free.length}개 모자라요. 빈자리를 줄이거나 줄·분단을 늘려 주세요.`};
+  // 짝 자리는 앞줄부터 채우고 남는 자리는 뒤쪽에
+  const F=S.mode==='pair'?free.slice(0,pool.length):free;
+  const apart=S.apartL.map(p=>pk(p[0],p[1]));
+  const front=new Set(S.mode==='pair'?parseList(S.front):[]);
+  const prev=S.avoid&&c.A.some(Boolean)?togetherSet(c.A,geo):new Set();
+  const G=S.gender, rule=S.mode==='pair'?S.pairRule:S.grpRule;
+  const B=STUDENTS.filter(n=>G[n]==='m').length;
+  /* 성별 조건 위반 수 */
+  const gBad=A=>{if(rule==='any')return 0;const by={};A.forEach((n,i)=>{if(n)(by[geo[i].g]=by[geo[i].g]||[]).push(n)});let v=0;
+    Object.values(by).forEach(L=>{
+      if(S.mode==='pair'){if(L.length===2){const same=G[L[0]]===G[L[1]];if(rule==='mix'&&same)v++;if(rule==='same'&&!same)v++}}
+      else {const b=L.filter(n=>G[n]==='m').length;if(Math.abs(b-L.length*B/N)>=1)v++}
+    });return v};
+  const score=A=>{let s=0;const T=togetherSet(A,geo);apart.forEach(k=>{if(T.has(k))s+=1000});
+    A.forEach((n,i)=>{if(n&&front.has(n)&&geo[i].r>1)s+=1000});s+=gBad(A)*1000;prev.forEach(k=>{if(T.has(k))s+=1});return s};
+  let best=null,bs=1e9;
+  for(let t=0;t<40&&bs>0;t++){
+    const A=Array(M).fill(null);locks.forEach(i=>A[i]=c.A[i]);
+    const p=[...pool].sort(()=>Math.random()-.5);F.forEach((i,k)=>A[i]=p[k]);
+    let sc=score(A);
+    for(let k=0;k<1500&&sc>0;k++){const a=F[Math.floor(Math.random()*F.length)],b=F[Math.floor(Math.random()*F.length)];if(a===b)continue;
+      [A[a],A[b]]=[A[b],A[a]];const ns=score(A);if(ns<=sc)sc=ns;else [A[a],A[b]]=[A[b],A[a]]}
+    if(sc<bs){bs=sc;best=A}
+  }
+  return {A:best,hard:Math.floor(bs/1000),soft:bs%1000,prevOn:prev.size>0};
+}
+function doShuffle(){
+  if(BUSY)return; const r=solve(); if(r.err){toast(r.err);return}
+  const c=cur(); BUSY=true;
+  const filled=r.A.map((n,i)=>n&&!c.lock.includes(i)?i:-1).filter(i=>i>=0);
+  let msg=''; if(r.hard) msg+=`⚠️ 조건(섞이면 안 되는 사이·성별·앞자리)을 ${r.hard}군데 맞추지 못했어요. 한 번 더 눌러 보거나, 고정한 자리·빈자리를 줄여 보세요. `;
+  if(r.prevOn) msg+= r.soft?`지난번과 같은 짝·모둠이 ${r.soft}쌍 있어요.`:'지난번과 겹치는 짝·모둠이 없어요 👍';
+  if(S.reveal){c.A=r.A;HID=new Set(filled);BUSY=false;render();$('msg').innerHTML=msg?`<div class="notice">${msg}</div>`:'';commit();return}
+  // 두구두구 애니메이션
+  const els=[...document.querySelectorAll('.seat[data-i]')].filter(e=>filled.includes(+e.dataset.i));
+  const t0=Date.now(); const iv=setInterval(()=>{els.forEach(e=>{e.innerHTML=STUDENTS[Math.floor(Math.random()*N)]});
+    if(Date.now()-t0>1300){clearInterval(iv);c.A=r.A;HID.clear();BUSY=false;render(true);$('msg').innerHTML=msg?`<div class="notice">${msg}</div>`:'';commit()}},70);
+}
+function commit(){
+  const c=cur(); const d=new Date();
+  S.hist.unshift({t:d.getTime(),mode:S.mode,sig:c.sig,rows:S.rows,cols:S.cols,groups:S.groups,A:[...c.A],off:[...c.off],lock:[...c.lock]});
+  S.hist=S.hist.slice(0,12); save(); drawHist();
+}
+
+/* ---------- 그리기 ---------- */
+function seatHTML(i,c,pop){
+  const n=c.A[i], off=c.off.includes(i), lk=c.lock.includes(i)&&n;
+  const gg=n?(S.gender[n]==='m'?'gm':'gf'):'';
+  const cls=['seat',gg,off?'off':'',!off&&!n?'empty':'',lk?'lock':'',PICK===i?'pick':'',HID.has(i)?'hid':'',pop&&n&&!HID.has(i)?'pop':''].join(' ');
+  const body=off?'없음':HID.has(i)?'?':n?`${n}<small>번</small>`:'·';
+  const st=pop&&n?`style="animation-delay:${(i%12)*40}ms"`:'';
+  return `<div class="${cls}" data-i="${i}" ${st}>${body}</div>`;
+}
+function render(pop){
+  const c=cur(), geo=seatsGeo();
+  document.querySelectorAll('#mode button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.mode));
+  document.querySelectorAll('#tool button').forEach(b=>{b.classList.toggle('on',b.dataset.t===TOOL);if(b.dataset.t==='off')b.hidden=S.mode!=='pair'});
+  $('pairSel').hidden=S.mode!=='pair'; $('pairRuleRow').hidden=S.mode!=='pair'; $('grpRuleRow').hidden=S.mode!=='group'; $('grpSel').hidden=S.mode!=='group'; $('frontRow').hidden=S.mode!=='pair';
+  $('gsize').textContent=`(${sizes().join('·')}명)`;
+  $('toolTip').textContent={swap:'두 자리를 차례로 누르면 서로 바뀌어요.',lock:'누른 자리는 다음 뽑기 때 그대로 남아요.',off:'누른 자리를 쓰지 않는 자리로 바꿔요.'}[TOOL];
+  let h='';
+  if(S.mode==='pair'){
+    for(let r=0;r<S.rows;r++){h+='<div class="rowp">';for(let p=0;p<S.cols;p++){h+='<div class="pair">';for(let k=0;k<2;k++)h+=seatHTML(r*S.cols*2+p*2+k,c,pop);h+='</div>'}h+='</div>'}
+  } else {
+    let i=0;h='<div class="groups">'+sizes().map((n,g)=>{let s=`<div class="gbox" style="--gc:${GC[g%GC.length]}"><div class="gt">${g+1}모둠</div><div class="gs">`;for(let k=0;k<n;k++)s+=seatHTML(i++,c,pop);return s+'</div></div>'}).join('')+'</div>';
+  }
+  $('board').innerHTML=h; $('board').classList.toggle('flip',!!S.flip); $('stage').classList.toggle('showg',!!S.showG);
+  drawSide();
+  $('deskTop').hidden=!!S.flip; $('deskBot').hidden=!S.flip; $('flipBtn').textContent=S.flip?'🔄 학생 시점':'🔄 교사 시점';
+  const placed=c.A.filter(Boolean).length, missing=STUDENTS.filter(n=>!c.A.includes(n));
+  $('info').textContent=placed?`${S.mode==='pair'?'짝 자리':'모둠 자리'} · ${placed}명 배치`:'🎲 [자리 바꾸기]를 눌러 새 자리를 뽑아요';
+  if(placed&&missing.length&&!BUSY) $('msg').innerHTML=`<div class="notice err">자리가 없는 번호: ${missing.join(', ')} — 빈자리를 풀거나 다시 뽑아 주세요.</div>`;
+  $('showAll').hidden=!HID.size;
+  document.querySelectorAll('.seat[data-i]').forEach(e=>e.onclick=()=>clickSeat(+e.dataset.i));
+}
+function clickSeat(i){
+  if(BUSY)return; const c=cur();
+  if(HID.has(i)){HID.delete(i);const e=document.querySelector(`.seat[data-i="${i}"]`);e.classList.remove('hid');e.classList.add('pop');e.innerHTML=`${c.A[i]}<small>번</small>`;$('showAll').hidden=!HID.size;return}
+  if(TOOL==='lock'){if(!c.A[i]){toast('번호가 있는 자리만 고정할 수 있어요');return}
+    c.lock=c.lock.includes(i)?c.lock.filter(x=>x!==i):[...c.lock,i];save();render();return}
+  if(TOOL==='off'){if(c.off.includes(i))c.off=c.off.filter(x=>x!==i);else{c.off.push(i);c.A[i]=null;c.lock=c.lock.filter(x=>x!==i)}save();render();return}
+  if(PICK===null){PICK=i;render();return}
+  if(PICK!==i&&!c.off.includes(i)&&!c.off.includes(PICK)){[c.A[PICK],c.A[i]]=[c.A[i],c.A[PICK]];
+    const lp=c.lock.includes(PICK),li=c.lock.includes(i);c.lock=c.lock.filter(x=>x!==PICK&&x!==i);if(lp)c.lock.push(i);if(li)c.lock.push(PICK)}
+  PICK=null;save();render();
+}
+function drawHist(){
+  $('hist').innerHTML=S.hist.length?S.hist.map((h,k)=>{const d=new Date(h.t);return `<button data-k="${k}">${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')} · ${h.mode==='pair'?'짝 자리':'모둠 '+h.groups+'개'}${k===0?' <b style="color:var(--eng)">(지금)</b>':''}</button>`}).join(''):'<div class="muted" style="font-size:14px">아직 기록이 없어요.</div>';
+  $('hist').querySelectorAll('button').forEach(b=>b.onclick=()=>{const h=S.hist[+b.dataset.k];
+    if(!confirmSoft(b))return;
+    S.mode=h.mode;S.rows=h.rows;S.cols=h.cols;S.groups=h.groups;S.cur[h.mode]={sig:h.sig,A:[...h.A],off:[...h.off],lock:[...h.lock]};HID.clear();PICK=null;syncInputs();save();render();$('msg').innerHTML='';toast('그때 자리로 되돌렸어요')});
+}
+function confirmSoft(b){if(b.dataset.ok){return true}b.dataset.ok='1';const t=b.innerHTML;b.innerHTML='↩ 한 번 더 누르면 이 자리로 되돌려요';setTimeout(()=>{b.innerHTML=t;delete b.dataset.ok},2500);return false}
+
+/* ---------- 입력 ---------- */
+$('rows').innerHTML=[2,3,4,5,6,7].map(n=>`<option>${n}</option>`).join('');
+$('cols').innerHTML=[2,3,4,5].map(n=>`<option>${n}</option>`).join('');
+$('groups').innerHTML=[3,4,5,6,7,8].map(n=>`<option>${n}</option>`).join('');
+function syncInputs(){$('rows').value=S.rows;$('cols').value=S.cols;$('groups').value=S.groups;$('front').value=S.front;$('avoid').checked=S.avoid;$('reveal').checked=S.reveal;$('showG').checked=S.showG}
+document.querySelectorAll('#mode button').forEach(b=>b.onclick=()=>{S.mode=b.dataset.m;HID.clear();PICK=null;$('msg').innerHTML='';save();render()});
+document.querySelectorAll('#tool button').forEach(b=>b.onclick=()=>{TOOL=b.dataset.t;PICK=null;render()});
+[['rows','rows'],['cols','cols'],['groups','groups']].forEach(([id,k])=>$(id).onchange=()=>{S[k]=+$(id).value;HID.clear();$('msg').innerHTML='';save();render()});
+$('front').oninput=()=>{S.front=$('front').value;save()};
+$('avoid').onchange=()=>{S.avoid=$('avoid').checked;save()}; $('reveal').onchange=()=>{S.reveal=$('reveal').checked;save()};
+$('shuffle').onclick=doShuffle;
+$('showAll').onclick=()=>{const c=cur();[...HID].forEach((i,k)=>setTimeout(()=>{HID.delete(i);const e=document.querySelector(`.seat[data-i="${i}"]`);if(e){e.classList.remove('hid');e.classList.add('pop');e.innerHTML=`${c.A[i]}<small>번</small>`}},k*60));setTimeout(()=>$('showAll').hidden=true,HID.size*60)};
+$('flipBtn').onclick=()=>{S.flip=!S.flip;save();render()};
+$('bigBtn').onclick=()=>$('stage').classList.toggle('big');
+$('fsBtn').onclick=()=>{const el=document.querySelector('.board-wrap');try{document.fullscreenElement?document.exitFullscreen():el.requestFullscreen()}catch(e){}};
+$('printBtn').onclick=()=>{if(HID.size){toast('먼저 모든 자리를 공개해 주세요');return}window.print()};
+
+/* ---------- 성별·섞이면 안 되는 사이 ---------- */
+function drawSide(){
+  const G=S.gender, B=STUDENTS.filter(n=>G[n]==='m').length, Gi=N-B;
+  document.querySelectorAll('#pairRule button').forEach(b=>b.classList.toggle('on',b.dataset.r===S.pairRule));
+  document.querySelectorAll('#grpRule button').forEach(b=>b.classList.toggle('on',b.dataset.r===S.grpRule));
+  $('pairRuleTip').textContent={any:'성별과 상관없이 무작위로 짝을 정해요.',
+    mix:`남자 ${B}명 · 여자 ${Gi}명 → 남녀 짝 ${Math.min(B,Gi)}쌍${B!==Gi?`, 남는 ${B>Gi?'남자':'여자'} ${Math.abs(B-Gi)}명은 같은 성끼리 앉거나 혼자 앉아요`:''}.`,
+    same:`남자는 남자끼리, 여자는 여자끼리 짝이 돼요. (남자 ${B}명 · 여자 ${Gi}명)`}[S.pairRule];
+  $('gChips').innerHTML=STUDENTS.map(n=>`<button class="gchip ${G[n]}" data-n="${n}">${n}${G[n]==='m'?'👦':'👧'}</button>`).join('');
+  $('gSum').textContent=`남자 ${B}명 · 여자 ${Gi}명 (기본값: 1~12번 남, 51~63번 여)`;
+  $('gChips').querySelectorAll('button').forEach(b=>b.onclick=()=>{const n=b.dataset.n;S.gender[n]=S.gender[n]==='m'?'f':'m';save();render()});
+  $('apList').innerHTML=S.apartL.length?S.apartL.map((p,k)=>`<span class="apchip">${p[0]}번 ↔ ${p[1]}번<button data-k="${k}" title="지우기">×</button></span>`).join(''):'<span class="muted" style="font-size:14px">아직 없어요.</span>';
+  $('apList').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.apartL.splice(+b.dataset.k,1);save();render()});
+}
+const opt=STUDENTS.map(n=>`<option value="${n}">${n}번</option>`).join('');
+$('apA').innerHTML=opt; $('apB').innerHTML=opt; $('apB').selectedIndex=1;
+$('apAdd').onclick=()=>{const a=$('apA').value,b=$('apB').value;
+  if(a===b){toast('서로 다른 두 번호를 골라 주세요');return}
+  if(S.apartL.some(p=>pk(p[0],p[1])===pk(a,b))){toast('이미 들어 있어요');return}
+  S.apartL.push(Number(a)<Number(b)?[a,b]:[b,a]);save();render();toast(`${a}번과 ${b}번은 떨어져 앉아요`)};
+document.querySelectorAll('#pairRule button').forEach(b=>b.onclick=()=>{S.pairRule=b.dataset.r;save();render()});
+document.querySelectorAll('#grpRule button').forEach(b=>b.onclick=()=>{S.grpRule=b.dataset.r;save();render()});
+$('showG').onchange=()=>{S.showG=$('showG').checked;save();render()};
+syncInputs(); render(); drawHist();
+</script>
+</body>
+</html>

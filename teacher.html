@@ -125,7 +125,7 @@ function redraw(){ VIEW==='day'?drawDay():drawAcc(); }
 $('dsel').innerHTML=DATES.map(d=>`<option value="${d}">${nice(d)} · ${esc(SCHED[d].t)}</option>`).join('');
 $('dsel').onchange=()=>setDate($('dsel').value);
 $('tday').onclick=()=>setDate(defaultDate());
-$('pvBtn').onclick=()=>{location.href='index.html#p'+DATE.replace(/-/g,'')};
+$('pvBtn').onclick=()=>{location.href='reading.html#p'+DATE.replace(/-/g,'')};
 $('byQ').onclick=()=>{MODE='q';drawDay()}; $('byS').onclick=()=>{MODE='s';drawDay()};
 $('bigBtn').onclick=()=>$('detail').classList.toggle('big');
 function setDate(d){DATE=d;$('dsel').value=d;OPEN=null;drawDay()}
