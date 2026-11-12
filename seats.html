@@ -25,6 +25,7 @@
 .chk input{width:18px;height:18px;margin-top:3px}
 .go{width:100%;font-size:26px;padding:12px 0;margin-top:4px}
 .board-wrap{position:relative}
+@media (min-width:901px){.board-wrap{position:sticky;top:66px}}
 .stage{background:#fff;border:2px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 3px 0 var(--line)}
 .desk{margin:0 auto 18px;width:46%;min-width:220px;text-align:center;font-family:'Jua';font-size:20px;color:#fff;background:linear-gradient(#7a5a3e,#5b4029);border-radius:12px;padding:8px 0;box-shadow:0 4px 0 #3e2b1b}
 .board{display:flex;flex-direction:column;gap:14px}
@@ -51,6 +52,12 @@
 .gchip{border:2px solid var(--line);border-radius:10px;min-width:38px;padding:2px 4px;font-family:'Jua';font-size:15px;background:#fff;color:var(--muted)}
 .gchip.m{background:#e6f0fc;border-color:#9fc0e8;color:#2f6db8}
 .gchip.f{background:#fde9ef;border-color:#eeb0c4;color:#c0456e}
+.rost{display:flex;align-items:center;gap:6px;margin:5px 0;font-size:16px}
+.rost input[type=number]{width:62px;padding:4px 6px;font-size:17px;text-align:center;font-family:'Jua'}
+.rost input[type=text]{padding:4px 8px;font-size:15px}
+.gchip{cursor:default}
+.seat.wait{color:transparent;background:#fbf8f2;border-style:dashed}
+.seat.spin{border-color:var(--eng);background:#fff;color:var(--eng);transform:scale(1.08);box-shadow:0 0 0 5px rgba(47,109,184,.18)}
 .apchip{background:#fff1ef;border:2px solid #f0b8ae;border-radius:999px;padding:1px 4px 1px 10px;font-family:'Jua';font-size:15px;display:inline-flex;align-items:center;gap:4px}
 .apchip button{border:none;background:none;color:var(--bad);font-size:16px;padding:0 4px}
 .groups{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
@@ -96,8 +103,12 @@
         <div class="nsel" style="margin-top:0"><select id="apA"></select> 와(과) <select id="apB"></select> <button class="btn" id="apAdd" style="padding:3px 12px">추가</button></div>
         <div id="apList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
         <div class="tip">같은 짝·같은 모둠이 되지 않게 해요.</div></div>
-      <div class="row"><label class="h">👦👧 성별 <span class="muted" style="font-family:'Gowun Dodum';font-size:13px">(번호를 누르면 바뀌어요)</span></label>
-        <div id="gChips" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+      <div class="row"><label class="h">👦👧 우리 반 번호 <span class="muted" style="font-family:'Gowun Dodum';font-size:13px">(한 번 넣으면 이 컴퓨터에 저장돼요)</span></label>
+        <div class="rost">👦 남학생 <input type="number" id="mFrom" min="1" max="99"> 번 ~ <input type="number" id="mTo" min="1" max="99"> 번</div>
+        <div class="rost">👧 여학생 <input type="number" id="fFrom" min="1" max="99"> 번 ~ <input type="number" id="fTo" min="1" max="99"> 번</div>
+        <div class="rost">🚪 없는 번호 <input type="text" id="skip" placeholder="예: 7, 60 (전학 등)" style="flex:1;width:auto"></div>
+        <div class="tip">한쪽 성별만 있으면 그쪽 칸은 비워 두세요.</div>
+        <div id="gChips" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px"></div>
         <div class="tip" id="gSum"></div>
         <label class="chk" style="margin-top:6px;font-size:15px"><input type="checkbox" id="showG"> 자리판에 성별 색 표시</label></div>
       <div class="row" id="frontRow"><label class="h">앞쪽 두 줄에 앉을 번호</label>
@@ -106,6 +117,7 @@
       <div class="row">
         <label class="chk"><input type="checkbox" id="avoid"> 지난번 짝·모둠과 되도록 겹치지 않게</label>
         <label class="chk" style="margin-top:6px"><input type="checkbox" id="reveal"> 한 자리씩 눌러서 공개하기 🎁</label>
+        <div class="nsel" id="speedRow">자리 채우는 속도 <select id="speed"><option value="0.8">천천히</option><option value="0.45">보통</option><option value="0.2">빠르게</option></select></div>
       </div>
       <button class="btn solid go" id="shuffle">🎲 자리 바꾸기</button>
       <div class="row" style="margin-top:16px"><label class="h">자리판 고치기 <span class="muted" style="font-family:'Gowun Dodum';font-size:13px">(자리를 눌러요)</span></label>
@@ -118,7 +130,7 @@
       <div class="bar2">
         <span class="info" id="info"></span>
         <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn" id="showAll" hidden>🎉 모두 공개</button>
+          <button class="btn" id="showAll" hidden>🎉 모두 공개</button><button class="btn" id="skipBtn" hidden>⏭ 바로 보기</button>
           <button class="btn" id="flipBtn">🔄 교사 시점</button>
           <button class="btn" id="bigBtn">🔍 크게</button>
           <button class="btn" id="fsBtn">⛶ 전체 화면</button>
@@ -141,17 +153,24 @@
 const $=id=>document.getElementById(id);
 const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2400)}
-const N=STUDENTS.length;
+/* 명단은 아래 '우리 반 번호' 칸에서 만들어요 */
+let ROS=[], N=0, G={};
 const GC=['#fde8e4','#fff1d6','#e3f3e6','#e2eefb','#efe6fa','#fde6f1','#e5f6f6','#f3efe2'];
 
 /* ---------- 상태 ---------- */
 /* 성별 기본값: 1~12번 남, 51~63번 여 (화면에서 눌러 바꿀 수 있어요) */
-const GDEF={};STUDENTS.forEach(n=>GDEF[n]=Number(n)<50?'m':'f');
-const DEF={mode:'pair',rows:5,cols:3,groups:6,apartL:[],front:'',avoid:true,reveal:false,flip:false,cur:{},hist:[],gender:GDEF,pairRule:'any',grpRule:'any',showG:true};
+const DEF={mode:'pair',rows:5,cols:3,groups:6,apartL:[],front:'',avoid:true,reveal:false,flip:false,cur:{},hist:[],pairRule:'any',grpRule:'any',showG:true,speed:'0.45',
+  roster:{mFrom:1,mTo:12,fFrom:51,fTo:63,skip:''}};
 let S=Object.assign({},DEF,(()=>{try{return JSON.parse(LS.get('seats-v1')||'{}')}catch(e){return {}}})());
-STUDENTS.forEach(n=>{if(!S.gender[n])S.gender[n]=GDEF[n]});
+delete S.gender;
+function buildRoster(){const r=S.roster, sk=new Set(String(r.skip||'').split(/[,\s]+/).filter(Boolean));
+  const rng=(a,b)=>{a=parseInt(a,10);b=parseInt(b,10);if(!a||!b||b<a)return [];const L=[];for(let i=a;i<=b;i++)L.push(String(i));return L};
+  const m=rng(r.mFrom,r.mTo), f=rng(r.fFrom,r.fTo); G={};
+  m.forEach(n=>G[n]='m'); const dup=f.filter(n=>G[n]); f.forEach(n=>{if(!G[n])G[n]='f'});
+  ROS=[...m,...f.filter(n=>!m.includes(n))].filter(n=>!sk.has(n)).sort((a,b)=>a-b); N=ROS.length; return dup}
+buildRoster();
 const save=()=>LS.set('seats-v1',JSON.stringify(S));
-let TOOL='swap', PICK=null, HID=new Set(), BUSY=false;
+let TOOL='swap', PICK=null, HID=new Set(), WAIT=new Set(), BUSY=false, RUN=0;
 
 const sig=()=>S.mode==='pair'?`p${S.rows}x${S.cols}`:`g${S.groups}`;
 function sizes(){const b=Math.floor(N/S.groups),x=N%S.groups;return Array.from({length:S.groups},(_,g)=>b+(g<x?1:0))}
@@ -163,7 +182,7 @@ function seatsGeo(){
 function cur(){let c=S.cur[S.mode];const M=seatsGeo().length;
   if(!c||c.sig!==sig()){c={sig:sig(),A:Array(M).fill(null),lock:[],off:[]};S.cur[S.mode]=c}
   return c}
-const parseList=s=>String(s||'').split(/[,\s]+/).map(x=>x.trim()).filter(x=>STUDENTS.includes(x));
+const parseList=s=>String(s||'').split(/[,\s]+/).map(x=>x.trim()).filter(x=>ROS.includes(x));
 const pk=(a,b)=>Number(a)<Number(b)?a+'-'+b:b+'-'+a;
 function togetherSet(A,geo){const by={};A.forEach((n,i)=>{if(n){(by[geo[i].g]=by[geo[i].g]||[]).push(n)}});const s=new Set();
   Object.values(by).forEach(L=>{for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++)s.add(pk(L[i],L[j]))});return s}
@@ -173,7 +192,7 @@ function solve(){
   const c=cur(), geo=seatsGeo(), M=geo.length;
   const off=new Set(c.off), locks=new Set(c.lock.filter(i=>c.A[i]&&!off.has(i)));
   const lockedNums=new Set([...locks].map(i=>c.A[i]));
-  const pool=STUDENTS.filter(n=>!lockedNums.has(n));
+  const pool=ROS.filter(n=>!lockedNums.has(n));
   const free=[...Array(M).keys()].filter(i=>!off.has(i)&&!locks.has(i));
   if(free.length<pool.length) return {err:`자리가 ${pool.length-free.length}개 모자라요. 빈자리를 줄이거나 줄·분단을 늘려 주세요.`};
   // 짝 자리는 앞줄부터 채우고 남는 자리는 뒤쪽에
@@ -181,8 +200,8 @@ function solve(){
   const apart=S.apartL.map(p=>pk(p[0],p[1]));
   const front=new Set(S.mode==='pair'?parseList(S.front):[]);
   const prev=S.avoid&&c.A.some(Boolean)?togetherSet(c.A,geo):new Set();
-  const G=S.gender, rule=S.mode==='pair'?S.pairRule:S.grpRule;
-  const B=STUDENTS.filter(n=>G[n]==='m').length;
+  const rule=S.mode==='pair'?S.pairRule:S.grpRule;
+  const B=ROS.filter(n=>G[n]==='m').length;
   /* 성별 조건 위반 수 */
   const gBad=A=>{if(rule==='any')return 0;const by={};A.forEach((n,i)=>{if(n)(by[geo[i].g]=by[geo[i].g]||[]).push(n)});let v=0;
     Object.values(by).forEach(L=>{
@@ -209,10 +228,24 @@ function doShuffle(){
   let msg=''; if(r.hard) msg+=`⚠️ 조건(섞이면 안 되는 사이·성별·앞자리)을 ${r.hard}군데 맞추지 못했어요. 한 번 더 눌러 보거나, 고정한 자리·빈자리를 줄여 보세요. `;
   if(r.prevOn) msg+= r.soft?`지난번과 같은 짝·모둠이 ${r.soft}쌍 있어요.`:'지난번과 겹치는 짝·모둠이 없어요 👍';
   if(S.reveal){c.A=r.A;HID=new Set(filled);BUSY=false;render();$('msg').innerHTML=msg?`<div class="notice">${msg}</div>`:'';commit();return}
-  // 두구두구 애니메이션
-  const els=[...document.querySelectorAll('.seat[data-i]')].filter(e=>filled.includes(+e.dataset.i));
-  const t0=Date.now(); const iv=setInterval(()=>{els.forEach(e=>{e.innerHTML=STUDENTS[Math.floor(Math.random()*N)]});
-    if(Date.now()-t0>1300){clearInterval(iv);c.A=r.A;HID.clear();BUSY=false;render(true);$('msg').innerHTML=msg?`<div class="notice">${msg}</div>`:'';commit()}},70);
+  // 첫 번째 자리부터 한 명씩 채우기
+  c.A=r.A; HID.clear(); WAIT=new Set(filled); render(); $('msg').innerHTML='';
+  $('skipBtn').hidden=false; $('shuffle').disabled=true;
+  const step=Math.max(.1,parseFloat(S.speed)||.45)*1000, tok=++RUN;
+  const finish=()=>{if(tok!==RUN)return;RUN++;WAIT.clear();BUSY=false;$('skipBtn').hidden=true;$('shuffle').disabled=false;render();
+    $('msg').innerHTML=msg?`<div class="notice">${msg}</div>`:'';commit();toast('자리 배치 완료! 🎉')};
+  $('skipBtn').onclick=finish;
+  let k=0;
+  const next=()=>{if(tok!==RUN)return;if(k>=filled.length){finish();return}
+    const i=filled[k++], e=document.querySelector(`.seat[data-i="${i}"]`);
+    if(!e){next();return}
+    e.classList.remove('wait');e.classList.add('spin');
+    const t0=Date.now(), iv=setInterval(()=>{if(tok!==RUN){clearInterval(iv);return}
+      e.innerHTML=ROS[Math.floor(Math.random()*N)];
+      if(Date.now()-t0>=step*.75){clearInterval(iv);WAIT.delete(i);e.outerHTML=seatHTML(i,c,true);
+        const ne=document.querySelector(`.seat[data-i="${i}"]`);ne.onclick=()=>clickSeat(i);setTimeout(next,step*.25)}},60);
+  };
+  setTimeout(next,250);
 }
 function commit(){
   const c=cur(); const d=new Date();
@@ -223,10 +256,10 @@ function commit(){
 /* ---------- 그리기 ---------- */
 function seatHTML(i,c,pop){
   const n=c.A[i], off=c.off.includes(i), lk=c.lock.includes(i)&&n;
-  const gg=n?(S.gender[n]==='m'?'gm':'gf'):'';
-  const cls=['seat',gg,off?'off':'',!off&&!n?'empty':'',lk?'lock':'',PICK===i?'pick':'',HID.has(i)?'hid':'',pop&&n&&!HID.has(i)?'pop':''].join(' ');
-  const body=off?'없음':HID.has(i)?'?':n?`${n}<small>번</small>`:'·';
-  const st=pop&&n?`style="animation-delay:${(i%12)*40}ms"`:'';
+  const gg=n?(G[n]==='m'?'gm':'gf'):'';
+  const cls=['seat',WAIT.has(i)?'wait':gg,off?'off':'',!off&&!n?'empty':'',lk?'lock':'',PICK===i?'pick':'',HID.has(i)?'hid':'',pop&&n&&!HID.has(i)?'pop':''].join(' ');
+  const body=off?'없음':WAIT.has(i)?'':HID.has(i)?'?':n?`${n}<small>번</small>`:'·';
+  const st='';
   return `<div class="${cls}" data-i="${i}" ${st}>${body}</div>`;
 }
 function render(pop){
@@ -245,7 +278,7 @@ function render(pop){
   $('board').innerHTML=h; $('board').classList.toggle('flip',!!S.flip); $('stage').classList.toggle('showg',!!S.showG);
   drawSide();
   $('deskTop').hidden=!!S.flip; $('deskBot').hidden=!S.flip; $('flipBtn').textContent=S.flip?'🔄 학생 시점':'🔄 교사 시점';
-  const placed=c.A.filter(Boolean).length, missing=STUDENTS.filter(n=>!c.A.includes(n));
+  const placed=c.A.filter(Boolean).length, missing=ROS.filter(n=>!c.A.includes(n));
   $('info').textContent=placed?`${S.mode==='pair'?'짝 자리':'모둠 자리'} · ${placed}명 배치`:'🎲 [자리 바꾸기]를 눌러 새 자리를 뽑아요';
   if(placed&&missing.length&&!BUSY) $('msg').innerHTML=`<div class="notice err">자리가 없는 번호: ${missing.join(', ')} — 빈자리를 풀거나 다시 뽑아 주세요.</div>`;
   $('showAll').hidden=!HID.size;
@@ -275,7 +308,7 @@ $('rows').innerHTML=[2,3,4,5,6,7].map(n=>`<option>${n}</option>`).join('');
 $('cols').innerHTML=[2,3,4,5].map(n=>`<option>${n}</option>`).join('');
 $('groups').innerHTML=[3,4,5,6,7,8].map(n=>`<option>${n}</option>`).join('');
 function syncInputs(){$('rows').value=S.rows;$('cols').value=S.cols;$('groups').value=S.groups;$('front').value=S.front;$('avoid').checked=S.avoid;$('reveal').checked=S.reveal;$('showG').checked=S.showG}
-document.querySelectorAll('#mode button').forEach(b=>b.onclick=()=>{S.mode=b.dataset.m;HID.clear();PICK=null;$('msg').innerHTML='';save();render()});
+document.querySelectorAll('#mode button').forEach(b=>b.onclick=()=>{if(BUSY)return;S.mode=b.dataset.m;HID.clear();PICK=null;$('msg').innerHTML='';save();render()});
 document.querySelectorAll('#tool button').forEach(b=>b.onclick=()=>{TOOL=b.dataset.t;PICK=null;render()});
 [['rows','rows'],['cols','cols'],['groups','groups']].forEach(([id,k])=>$(id).onchange=()=>{S[k]=+$(id).value;HID.clear();$('msg').innerHTML='';save();render()});
 $('front').oninput=()=>{S.front=$('front').value;save()};
@@ -289,20 +322,26 @@ $('printBtn').onclick=()=>{if(HID.size){toast('먼저 모든 자리를 공개해
 
 /* ---------- 성별·섞이면 안 되는 사이 ---------- */
 function drawSide(){
-  const G=S.gender, B=STUDENTS.filter(n=>G[n]==='m').length, Gi=N-B;
+  const B=ROS.filter(n=>G[n]==='m').length, Gi=N-B;
   document.querySelectorAll('#pairRule button').forEach(b=>b.classList.toggle('on',b.dataset.r===S.pairRule));
   document.querySelectorAll('#grpRule button').forEach(b=>b.classList.toggle('on',b.dataset.r===S.grpRule));
   $('pairRuleTip').textContent={any:'성별과 상관없이 무작위로 짝을 정해요.',
     mix:`남자 ${B}명 · 여자 ${Gi}명 → 남녀 짝 ${Math.min(B,Gi)}쌍${B!==Gi?`, 남는 ${B>Gi?'남자':'여자'} ${Math.abs(B-Gi)}명은 같은 성끼리 앉거나 혼자 앉아요`:''}.`,
     same:`남자는 남자끼리, 여자는 여자끼리 짝이 돼요. (남자 ${B}명 · 여자 ${Gi}명)`}[S.pairRule];
-  $('gChips').innerHTML=STUDENTS.map(n=>`<button class="gchip ${G[n]}" data-n="${n}">${n}${G[n]==='m'?'👦':'👧'}</button>`).join('');
-  $('gSum').textContent=`남자 ${B}명 · 여자 ${Gi}명 (기본값: 1~12번 남, 51~63번 여)`;
-  $('gChips').querySelectorAll('button').forEach(b=>b.onclick=()=>{const n=b.dataset.n;S.gender[n]=S.gender[n]==='m'?'f':'m';save();render()});
+  $('gChips').innerHTML=ROS.map(n=>`<span class="gchip ${G[n]}">${n}</span>`).join('');
+  $('gSum').innerHTML=`<b>모두 ${N}명</b> · 남자 ${B}명 · 여자 ${Gi}명`;
+  S.apartL=S.apartL.filter(p=>ROS.includes(p[0])&&ROS.includes(p[1]));
   $('apList').innerHTML=S.apartL.length?S.apartL.map((p,k)=>`<span class="apchip">${p[0]}번 ↔ ${p[1]}번<button data-k="${k}" title="지우기">×</button></span>`).join(''):'<span class="muted" style="font-size:14px">아직 없어요.</span>';
   $('apList').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.apartL.splice(+b.dataset.k,1);save();render()});
 }
-const opt=STUDENTS.map(n=>`<option value="${n}">${n}번</option>`).join('');
-$('apA').innerHTML=opt; $('apB').innerHTML=opt; $('apB').selectedIndex=1;
+function fillOpts(){const opt=ROS.map(n=>`<option value="${n}">${n}번</option>`).join('');$('apA').innerHTML=opt;$('apB').innerHTML=opt;$('apB').selectedIndex=1}
+fillOpts();
+['mFrom','mTo','fFrom','fTo','skip'].forEach(k=>{$(k).value=S.roster[k]??'';$(k).onchange=()=>{
+  S.roster[k]=$(k).value.trim(); const dup=buildRoster();
+  if(dup.length) toast(`${dup.join(', ')}번이 남학생·여학생 두 쪽에 다 들어 있어요. 번호를 확인해 주세요`);
+  S.cur={}; HID.clear(); WAIT.clear(); PICK=null; fillOpts(); save(); render(); $('msg').innerHTML='';
+  toast(`우리 반 ${N}명으로 바뀌었어요. 자리를 새로 뽑아 주세요`)}});
+$('speed').value=S.speed; $('speed').onchange=()=>{S.speed=$('speed').value;save()};
 $('apAdd').onclick=()=>{const a=$('apA').value,b=$('apB').value;
   if(a===b){toast('서로 다른 두 번호를 골라 주세요');return}
   if(S.apartL.some(p=>pk(p[0],p[1])===pk(a,b))){toast('이미 들어 있어요');return}
