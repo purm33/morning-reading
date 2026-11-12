@@ -3,93 +3,158 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>우리 반 홈페이지</title>
-<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<title>독서 아침활동 (학생)</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
 :root{--accent:var(--read);--soft:var(--read-soft)}
-.wrap{max-width:1100px}
-.hero{position:relative;overflow:hidden;border-radius:26px;padding:30px 32px;margin:6px 0 18px;
-  background:linear-gradient(120deg,#fff1d6 0%,#ffe3c4 45%,#ffd6c9 100%);border:2px solid #f1d3ad;box-shadow:0 4px 0 #ecd2b1}
-.hero h1{font-family:'Jua';font-weight:400;font-size:42px;margin:0;line-height:1.2;color:#5a3418}
-.hero .today{font-family:'Jua';font-size:22px;color:#a0522d;margin-top:6px}
-.hero .hi{font-size:18px;color:#7a5236;margin-top:4px}
-.hero .deco{position:absolute;right:26px;top:16px;font-size:74px;opacity:.9;transform:rotate(8deg)}
-.hero .deco2{position:absolute;right:120px;bottom:-14px;font-size:48px;opacity:.55}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:18px}
-.tile{display:block;text-decoration:none;color:var(--ink);border-radius:22px;padding:22px 24px;border:2px solid var(--line);background:var(--card);box-shadow:0 4px 0 var(--line);transition:transform .15s}
-.tile:hover{transform:translateY(-3px)}
-.tile .ic{font-size:44px}
-.tile .nm{font-family:'Jua';font-size:28px;margin-top:4px}
-.tile .ds{color:var(--muted);font-size:17px}
-.tile.read{background:linear-gradient(160deg,#fff,#fbeee3);border-color:#ecd0bb}
-.tile.read .nm{color:var(--read)}
-.tile.seat{background:linear-gradient(160deg,#fff,#e8f1fb);border-color:#c9dcf0}
-.tile.seat .nm{color:var(--eng)}
-.tile .go{display:inline-block;margin-top:10px;font-family:'Jua';font-size:17px;padding:5px 16px;border-radius:999px;color:#fff}
-.tile.read .go{background:var(--read)} .tile.seat .go{background:var(--eng)}
-.todaybook{display:flex;gap:18px;align-items:center}
-.cover{flex:none;width:80px;height:108px;border-radius:7px 13px 13px 7px;background:linear-gradient(135deg,var(--read),#4b2f1d);display:flex;align-items:center;justify-content:center;font-size:40px;box-shadow:inset 6px 0 0 rgba(0,0,0,.18),0 4px 0 var(--line)}
-.todaybook .t{font-family:'Jua';font-size:28px;color:var(--read);line-height:1.25}
-.week{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-.day{border:2px solid var(--line);border-radius:16px;padding:10px 10px 12px;background:#fff;text-align:center}
-.day .d{font-family:'Jua';font-size:16px;color:var(--muted)}
-.day .e{font-size:30px;line-height:1.3}
-.day .n{font-size:15px;line-height:1.35}
-.day.now{border-color:var(--read);background:var(--read-soft)}
-.day.now .d{color:var(--read)}
-.day.off{opacity:.45}
-.foot{text-align:center;color:var(--muted);font-size:14px;margin-top:22px}
-.foot a{color:var(--muted)}
-@media (max-width:700px){.week{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:32px}.hero .deco{font-size:52px}}
+.login{max-width:440px;margin:70px auto;text-align:center}
+.login .big{font-family:'Jua';font-size:30px;margin-bottom:6px}
+.login input{font-size:44px;text-align:center;font-family:'Jua';margin:14px 0}
+.login .btn{font-size:24px;padding:10px 36px}
+.who{font-family:'Jua';font-size:20px;background:#fff;border:2px solid var(--line);border-radius:999px;padding:4px 14px}
+.head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.head .date{font-family:'Jua';font-size:30px}
+.timer{margin-left:auto;display:flex;align-items:center;gap:8px;font-family:'Jua';font-size:20px}
+.timer .clock{min-width:74px;text-align:center;background:#fff;border:2px solid var(--line);border-radius:12px;padding:2px 10px}
+.timer .clock.done{color:var(--bad);border-color:var(--bad)}
+.book{display:flex;gap:18px;align-items:center}
+.cover{flex:none;width:92px;height:124px;border-radius:8px 14px 14px 8px;background:linear-gradient(135deg,var(--read),#4b2f1d);display:flex;align-items:center;justify-content:center;font-size:46px;box-shadow:inset 7px 0 0 rgba(0,0,0,.18),0 4px 0 var(--line)}
+.book .t{font-family:'Jua';font-size:34px;line-height:1.25;color:var(--read)}
+.book .a{font-size:19px}
+.book .i{font-size:15px;color:var(--muted)}
+.plot{font-family:'Gowun Batang',serif;font-size:20px;line-height:2;margin-top:14px}
+.plot p{margin:0 0 14px;text-indent:1em}
+.plot p:last-child{margin-bottom:0}
+.step{display:inline-block;background:var(--soft);color:var(--read);font-family:'Jua';border-radius:999px;padding:2px 12px;font-size:16px;margin-bottom:6px}
+.qbox{border-top:2px dashed var(--line);padding-top:14px;margin-top:14px}
+.qbox:first-of-type{border-top:none;margin-top:0;padding-top:0}
+.qq{display:flex;gap:10px;font-size:20px;line-height:1.6;margin-bottom:8px}
+.qq .n{flex:none;font-family:'Jua';color:#fff;background:var(--read);width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:18px;margin-top:2px}
+textarea.ans{min-height:130px;line-height:1.8;font-size:19px}
+.cnt{font-size:15px;color:var(--muted);margin-top:4px;text-align:right}
+.cnt.ok{color:var(--ok)}
+.submitbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px}
+.submitbar .btn{font-size:22px;padding:10px 30px}
+.sent{font-family:'Jua';color:var(--ok)}
+.holiday{text-align:center;padding:40px 10px}
+.holiday .big{font-size:70px}
+@media (max-width:640px){.book{flex-direction:column;text-align:center}.timer{margin-left:0}}
 </style>
 </head>
-<body data-tab="home">
+<body data-tab="reading" data-site="student">
 <script src="nav.js"></script>
-<div class="wrap">
-  <div class="hero">
-    <span class="deco">🏫</span><span class="deco2">🌱</span>
-    <h1>우리 반 홈페이지</h1>
-    <div class="today" id="today"></div>
-    <div class="hi" id="hi"></div>
-  </div>
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast"></div>
 
-  <div class="tiles">
-    <a class="tile read" href="reading.html"><div class="ic">📚</div><div class="nm">독서활동</div>
-      <div class="ds">하루 10분, 책 줄거리를 읽고 내 생각을 써요.</div><span class="go">오늘의 책 읽으러 가기 →</span></a>
-    <a class="tile seat" href="seats.html"><div class="ic">🪑</div><div class="nm">자리바꾸기</div>
-      <div class="ds">두근두근! 새 짝과 새 모둠을 뽑아요.</div><span class="go">자리 뽑으러 가기 →</span></a>
-  </div>
-
-  <div class="card" id="bookCard"></div>
-  <div class="card"><h3>📅 이번 주 독서 책</h3><div class="week" id="week"></div></div>
-
-  <div class="foot">선생님용 · <a href="teacher.html">독서활동 기록 보기</a></div>
-</div>
-
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script src="books.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-const T=seoulToday(), td=dObj(T);
-$('today').textContent=`${td.getFullYear()}년 ${nice(T)}`;
-const MSG=['오늘도 즐겁게 시작해 볼까요? 😊','좋은 책 한 권이 좋은 친구가 돼요 📖','서로 돕는 우리 반, 최고! 🙌','작은 노력이 모여 큰 힘이 돼요 🌱','오늘 하루도 반짝반짝 빛나길! ✨'];
-$('hi').textContent=MSG[td.getDate()%MSG.length];
+const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+let db=null;
+try{ if(window.FIREBASE_CONFIG){firebase.initializeApp(window.FIREBASE_CONFIG);db=firebase.database();} }catch(e){console.log(e)}
 
-/* 오늘의 책 (없으면 다음 책) */
-const next=DATES.find(d=>d>=T);
-if(next){const b=SCHED[next], isT=next===T;
-  $('bookCard').innerHTML=`<h3>${isT?'📖 오늘의 책':'📖 다음 독서 책 · '+nice(next)}</h3>
-   <div class="todaybook"><div class="cover">${b.e}</div><div><div class="t">${esc(b.t)}</div><div>${esc(b.a)} 지음</div><div class="muted" style="font-size:15px">${esc(b.i)}</div>
-   ${isT?'<a class="btn solid" href="reading.html" style="text-decoration:none;display:inline-block;margin-top:8px">지금 읽고 생각 쓰기</a>':''}</div></div>`;
-} else $('bookCard').innerHTML='<h3>📖 독서활동</h3><div class="muted">올해 독서활동을 모두 마쳤어요. 수고했어요! 🎉</div>';
+/* 날짜: 오늘(서울). 교사 미리보기는 주소 끝에 #p20261113 */
+function pickDate(){
+  const m=(location.hash||'').match(/^#[dp](\d{4})(\d{2})(\d{2})$/);
+  if(m){const k=`${m[1]}-${m[2]}-${m[3]}`;if(SCHED[k])return k}
+  return seoulToday();
+}
+let PREVIEW=/^#p/.test(location.hash||'');
+let DATE=pickDate(), NUM=PREVIEW?'preview':LS.get('reading-num');
+if(!PREVIEW && NUM && !STUDENTS.includes(NUM)){ LS.del('reading-num'); NUM=null; }
+const draftKey=j=>`reading-draft-${DATE}-${NUM}-${j}`;
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2200)}
+function fmtTime(ts){if(!ts)return '';const d=new Date(ts);return `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`}
 
-/* 이번 주 (월~금) */
-const mon=new Date(td);mon.setDate(td.getDate()-((td.getDay()+6)%7));
-if(td.getDay()===0||td.getDay()===6) mon.setDate(mon.getDate()+7); // 주말엔 다음 주
-const key=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-$('week').innerHTML=[0,1,2,3,4].map(i=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const k=key(d),b=SCHED[k];
-  return `<div class="day ${k===T?'now':''} ${b?'':'off'}"><div class="d">${d.getMonth()+1}/${d.getDate()} ${WK[d.getDay()]}</div>
-   <div class="e">${b?b.e:(k==='2026-12-25'?'🎄':'·')}</div><div class="n">${b?esc(b.t):(k==='2026-12-25'?'성탄절':k<DATES[0]?'독서 시작 전':'쉬는 날')}</div></div>`}).join('');
+/* ---------- 번호 입력 ---------- */
+function login(){
+  $('app').innerHTML=`<div class="card login">
+    <div style="font-size:54px">📚</div>
+    <div class="big">독서 아침활동</div>
+    <div class="muted">내 번호를 입력하세요 <span style="font-size:15px">(${STUDENT_LABEL})</span></div>
+    <input type="number" id="numIn" min="1" max="63" inputmode="numeric" placeholder="번호">
+    <div><button class="btn solid" id="go">시작하기</button></div>
+    <div class="hint" id="lerr" style="color:var(--bad)"></div></div>`;
+  const go=()=>{const v=parseInt($('numIn').value,10);if(!STUDENTS.includes(String(v))){$('lerr').textContent=`우리 반 번호가 아니에요. (${STUDENT_LABEL})`;return}NUM=String(v);LS.set('reading-num',NUM);main()};
+  $('go').onclick=go; $('numIn').onkeydown=e=>{if(e.key==='Enter')go()}; $('numIn').focus();
+}
+
+/* ---------- 10분 타이머 ---------- */
+let tmr=null;
+function timerHTML(){return `<div class="timer">⏱️ <span class="clock" id="clk">10:00</span><button class="btn" id="tbtn">시작</button></div>`}
+function bindTimer(){
+  let left=600, run=false; const clk=$('clk'), b=$('tbtn');
+  const draw=()=>{clk.textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;clk.classList.toggle('done',left<=0)};
+  b.onclick=()=>{
+    if(left<=0){left=600;draw()}
+    run=!run; b.textContent=run?'멈춤':'시작'; clearInterval(tmr);
+    if(run) tmr=setInterval(()=>{left--;draw();if(left===300)toast('5분 남았어요!');if(left<=0){clearInterval(tmr);run=false;b.textContent='다시';toast('10분이 지났어요. 마무리해 볼까요?')}},1000);
+  };
+}
+
+/* ---------- 본 화면 ---------- */
+async function main(){
+  clearInterval(tmr);
+  const b=SCHED[DATE];
+  const warn=!db?`<div class="notice err">⚠️ 제출 서버에 연결되지 않았어요. 선생님께 알려 주세요.</div>`:'';
+  const i=DATES.indexOf(DATE);
+  $('app').innerHTML=`
+   <div class="top"><div class="brand">📚 독서 아침활동</div>
+     <div style="margin-left:auto;display:flex;gap:8px;align-items:center">${PREVIEW?'<span class="who">👀 교사 미리보기</span>':`<span class="who">${esc(NUM)}번</span><button class="btn" id="chg">번호 바꾸기</button>`}</div></div>
+   ${PREVIEW?`<div class="notice" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">👀 <b>미리보기</b>: 학생에게 보이는 화면이에요. 여기서는 제출되지 않아요.
+     <span style="margin-left:auto;display:flex;gap:6px"><a class="btn" href="teacher.html" style="text-decoration:none">↩ 교사 화면</a><button class="btn" id="pv" ${i<=0?'disabled':''}>◀ 이전 날</button><button class="btn" id="nx" ${i<0||i>=DATES.length-1?'disabled':''}>다음 날 ▶</button></span></div>`:warn}
+   <div class="head"><div class="date">${nice(DATE)}</div>${b?timerHTML():''}</div>
+   <div id="body"></div>`;
+  if(PREVIEW){$('pv').onclick=()=>{if(i>0)location.hash='#p'+DATES[i-1].replace(/-/g,'')};$('nx').onclick=()=>{if(i<DATES.length-1)location.hash='#p'+DATES[i+1].replace(/-/g,'')};}
+  else $('chg').onclick=()=>{LS.del('reading-num');NUM=null;login()};
+  if(!b){
+    const isXmas=DATE==='2026-12-25';
+    $('body').innerHTML=`<div class="card holiday"><div class="big">${isXmas?'🎄':'☕'}</div><h2 style="font-family:Jua;font-weight:400">${isXmas?'성탄절 · 쉬는 날':'오늘은 독서 아침활동이 없는 날이에요'}</h2><div class="muted">독서 아침활동은 12월 31일까지 평일마다 해요.</div></div>`;
+    return;
+  }
+  bindTimer();
+  $('body').innerHTML=`
+   <div class="card">
+     <div class="book"><div class="cover">${b.e}</div>
+       <div><div class="t">${esc(b.t)}</div><div class="a">${esc(b.a)} 지음</div><div class="i">${esc(b.i)}</div></div></div>
+     <div class="plot"><span class="step">① 줄거리 읽기 · 약 4분</span>${b.s.map(p=>`<p>${esc(p)}</p>`).join('')}</div>
+   </div>
+   <div class="card"><h3>💭 ② 생각 쓰기 · 약 6분</h3>
+     <div class="muted" style="font-size:16px;margin:-4px 0 14px">세 질문에 내 생각을 써요. 정답은 없어요! 질문마다 <b>두 문장 이상</b>, 까닭도 함께 써 보세요.</div>
+     ${b.q.map((q,j)=>`<div class="qbox"><div class="qq"><span class="n">${j+1}</span><span>${esc(q)}</span></div>
+       <textarea class="ans" id="a${j}" placeholder="나는 ~라고 생각해요. 왜냐하면 ~"></textarea><div class="cnt" id="c${j}"></div></div>`).join('')}
+     ${PREVIEW?`<div class="submitbar"><button class="btn" disabled>제출하기</button><span class="muted">👀 미리보기에서는 제출되지 않아요</span></div>`
+       :`<div class="submitbar"><button class="btn solid" id="send">제출하기</button><span id="sentMsg" class="muted"></span></div>`}
+   </div>`;
+  const upd=j=>{const n=countChars($('a'+j).value),c=$('c'+j);c.textContent=`${n}자${n>=MIN_CHARS?' ✅':` / ${MIN_CHARS}자 이상`}`;c.className='cnt'+(n>=MIN_CHARS?' ok':'')};
+  b.q.forEach((_,j)=>{const t=$('a'+j);if(!PREVIEW)t.value=LS.get(draftKey(j))||'';t.oninput=()=>{if(!PREVIEW)LS.set(draftKey(j),t.value);upd(j)};upd(j)});
+  if(PREVIEW) return;
+  /* 이전 제출 불러오기 */
+  if(db){try{const s=await db.ref(`reading/${DATE}/${NUM}`).get();if(s.exists()){const v=s.val();b.q.forEach((_,j)=>{const t=$('a'+j);if(!t.value&&v.a)t.value=v.a[j]||'';upd(j)});markSent(v.ts)}}catch(e){}}
+  $('send').onclick=send;
+}
+function markSent(ts){$('sentMsg').innerHTML=`<span class="sent">✅ 제출했어요 ${fmtTime(ts)}</span> · 고쳐서 다시 제출할 수 있어요`}
+async function send(){
+  const b=SCHED[DATE];
+  const a=b.q.map((_,j)=>$('a'+j).value.trim());
+  const short=a.map((x,j)=>countChars(x)<MIN_CHARS?j+1:0).filter(Boolean);
+  if(short.length){toast(`${short.join(', ')}번 질문에 생각을 조금 더 써 주세요 (${MIN_CHARS}자 이상)`);return}
+  if(!db){toast('서버 연결이 안 돼요. 선생님께 알려 주세요');return}
+  const btn=$('send');btn.disabled=true;
+  try{
+    await db.ref(`reading/${DATE}/${NUM}`).set({a,book:b.t,chars:a.map(countChars),ts:firebase.database.ServerValue.TIMESTAMP});
+    markSent(Date.now()); toast('제출 완료! 👏');
+  }catch(e){$('sentMsg').innerHTML='<span style="color:var(--bad)">제출에 실패했어요. 다시 눌러 주세요.</span>'}
+  finally{btn.disabled=false}
+}
+
+if(NUM) main(); else login();
+window.addEventListener('hashchange',()=>{const wasP=PREVIEW;PREVIEW=/^#p/.test(location.hash||'');DATE=pickDate();
+  if(PREVIEW){NUM='preview';main();window.scrollTo(0,0)} else { if(wasP){NUM=LS.get('reading-num');if(NUM&&!STUDENTS.includes(NUM))NUM=null} NUM?main():login(); }});
 </script>
 </body>
 </html>

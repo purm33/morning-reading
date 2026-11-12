@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>우리 반 · 선생님</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+:root{--accent:var(--read);--soft:var(--read-soft)}
+.wrap{max-width:1100px}
+.hero{position:relative;overflow:hidden;border-radius:26px;padding:30px 32px;margin:6px 0 18px;
+  background:linear-gradient(120deg,#fff1d6 0%,#ffe3c4 45%,#ffd6c9 100%);border:2px solid #f1d3ad;box-shadow:0 4px 0 #ecd2b1}
+.hero h1{font-family:'Jua';font-weight:400;font-size:42px;margin:0;line-height:1.2;color:#5a3418}
+.hero .today{font-family:'Jua';font-size:22px;color:#a0522d;margin-top:6px}
+.hero .hi{font-size:18px;color:#7a5236;margin-top:4px}
+.hero .deco{position:absolute;right:26px;top:16px;font-size:74px;opacity:.9;transform:rotate(8deg)}
+.hero .deco2{position:absolute;right:120px;bottom:-14px;font-size:48px;opacity:.55}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:18px}
+.tile{display:block;text-decoration:none;color:var(--ink);border-radius:22px;padding:22px 24px;border:2px solid var(--line);background:var(--card);box-shadow:0 4px 0 var(--line);transition:transform .15s}
+.tile:hover{transform:translateY(-3px)}
+.tile .ic{font-size:44px}
+.tile .nm{font-family:'Jua';font-size:28px;margin-top:4px}
+.tile .ds{color:var(--muted);font-size:17px}
+.tile.read{background:linear-gradient(160deg,#fff,#fbeee3);border-color:#ecd0bb}
+.tile.read .nm{color:var(--read)}
+.tile.seat{background:linear-gradient(160deg,#fff,#e8f1fb);border-color:#c9dcf0}
+.tile.seat .nm{color:var(--eng)}
+.tile .go{display:inline-block;margin-top:10px;font-family:'Jua';font-size:17px;padding:5px 16px;border-radius:999px;color:#fff}
+.tile.read .go{background:var(--read)} .tile.seat .go{background:var(--eng)}
+.todaybook{display:flex;gap:18px;align-items:center}
+.cover{flex:none;width:80px;height:108px;border-radius:7px 13px 13px 7px;background:linear-gradient(135deg,var(--read),#4b2f1d);display:flex;align-items:center;justify-content:center;font-size:40px;box-shadow:inset 6px 0 0 rgba(0,0,0,.18),0 4px 0 var(--line)}
+.todaybook .t{font-family:'Jua';font-size:28px;color:var(--read);line-height:1.25}
+.week{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.day{border:2px solid var(--line);border-radius:16px;padding:10px 10px 12px;background:#fff;text-align:center}
+.day .d{font-family:'Jua';font-size:16px;color:var(--muted)}
+.day .e{font-size:30px;line-height:1.3}
+.day .n{font-size:15px;line-height:1.35}
+.day.now{border-color:var(--read);background:var(--read-soft)}
+.day.now .d{color:var(--read)}
+.day.off{opacity:.45}
+.foot{text-align:center;color:var(--muted);font-size:14px;margin-top:22px}
+.foot a{color:var(--muted)}
+@media (max-width:700px){.week{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:32px}.hero .deco{font-size:52px}}
+</style>
+</head>
+<body data-tab="home" data-site="teacher">
+<script src="nav.js"></script>
+<div class="wrap">
+  <div class="hero">
+    <span class="deco">🏫</span><span class="deco2">🌱</span>
+    <h1>우리 반 · 선생님</h1>
+    <div class="today" id="today"></div>
+    <div class="hi" id="hi"></div>
+  </div>
+
+  <div class="tiles">
+    <a class="tile read" href="teacher.html"><div class="ic">📚</div><div class="nm">독서활동 기록</div>
+      <div class="ds" id="subCnt">오늘 제출 현황을 불러오는 중…</div><span class="go">학생 답 보러 가기 →</span></a>
+    <a class="tile seat" href="seats.html"><div class="ic">🪑</div><div class="nm">자리바꾸기</div>
+      <div class="ds">짝·모둠 자리를 한 명씩 뽑아요. 남녀 짝, 섞이면 안 되는 사이 설정.</div><span class="go">자리 뽑으러 가기 →</span></a>
+  </div>
+
+  <div class="card" id="bookCard"></div>
+  <div class="card"><h3>📅 이번 주 독서 책</h3><div class="week" id="week"></div></div>
+
+  <div class="foot">학생 주소: <b id="stuUrl"></b> · 학생 화면에는 독서활동만 보여요</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="books.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const T=seoulToday(), td=dObj(T);
+$('today').textContent=`${td.getFullYear()}년 ${nice(T)}`;
+const MSG=['오늘도 즐겁게 시작해 볼까요? 😊','좋은 책 한 권이 좋은 친구가 돼요 📖','서로 돕는 우리 반, 최고! 🙌','작은 노력이 모여 큰 힘이 돼요 🌱','오늘 하루도 반짝반짝 빛나길! ✨'];
+$('hi').textContent=MSG[td.getDate()%MSG.length];
+
+/* 오늘의 책 (없으면 다음 책) */
+const next=DATES.find(d=>d>=T);
+if(next){const b=SCHED[next], isT=next===T;
+  $('bookCard').innerHTML=`<h3>${isT?'📖 오늘의 책':'📖 다음 독서 책 · '+nice(next)}</h3>
+   <div class="todaybook"><div class="cover">${b.e}</div><div><div class="t">${esc(b.t)}</div><div>${esc(b.a)} 지음</div><div class="muted" style="font-size:15px">${esc(b.i)}</div>
+   <a class="btn solid" href="index.html#p${next.replace(/-/g,'')}" style="text-decoration:none;display:inline-block;margin-top:8px">👀 학생 화면 미리보기</a></div></div>`;
+} else $('bookCard').innerHTML='<h3>📖 독서활동</h3><div class="muted">올해 독서활동을 모두 마쳤어요. 수고했어요! 🎉</div>';
+
+$('stuUrl').textContent=location.href.replace(/home\.html.*$/,'');
+/* 오늘 제출 현황 */
+try{firebase.initializeApp(window.FIREBASE_CONFIG);
+  if(SCHED[T]) firebase.database().ref('reading/'+T).on('value',s=>{const v=s.val()||{};const c=STUDENTS.filter(n=>v[n]).length;
+    $('subCnt').innerHTML=`오늘(${esc(SCHED[T].t)}) <b>${c} / ${STUDENTS.length}명</b> 제출 · 미제출 ${STUDENTS.length-c}명`},()=>{$('subCnt').textContent='기록을 불러오지 못했어요 (파이어베이스 규칙 확인)'});
+  else $('subCnt').textContent='오늘은 독서활동이 없는 날이에요.';
+}catch(e){$('subCnt').textContent='제출 현황을 불러올 수 없어요.'}
+/* 이번 주 (월~금) */
+const mon=new Date(td);mon.setDate(td.getDate()-((td.getDay()+6)%7));
+if(td.getDay()===0||td.getDay()===6) mon.setDate(mon.getDate()+7); // 주말엔 다음 주
+const key=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+$('week').innerHTML=[0,1,2,3,4].map(i=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const k=key(d),b=SCHED[k];
+  return `<div class="day ${k===T?'now':''} ${b?'':'off'}"><div class="d">${d.getMonth()+1}/${d.getDate()} ${WK[d.getDay()]}</div>
+   <div class="e">${b?b.e:(k==='2026-12-25'?'🎄':'·')}</div><div class="n">${b?esc(b.t):(k==='2026-12-25'?'성탄절':k<DATES[0]?'독서 시작 전':'쉬는 날')}</div></div>`}).join('');
+</script>
+</body>
+</html>

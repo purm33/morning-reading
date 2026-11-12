@@ -47,7 +47,8 @@ table.acc td.future{background:#faf8f4;color:#e3ddd3}
 table.acc tr.rate td{font-family:'Jua';background:#fbf3ec}
 </style>
 </head>
-<body>
+<body data-tab="records" data-site="teacher">
+<script src="nav.js"></script>
 <div class="wrap">
   <div class="top">
     <div class="brand">📚 독서 아침활동 · 교사</div>
@@ -125,7 +126,7 @@ function redraw(){ VIEW==='day'?drawDay():drawAcc(); }
 $('dsel').innerHTML=DATES.map(d=>`<option value="${d}">${nice(d)} · ${esc(SCHED[d].t)}</option>`).join('');
 $('dsel').onchange=()=>setDate($('dsel').value);
 $('tday').onclick=()=>setDate(defaultDate());
-$('pvBtn').onclick=()=>{location.href='reading.html#p'+DATE.replace(/-/g,'')};
+$('pvBtn').onclick=()=>{location.href='index.html#p'+DATE.replace(/-/g,'')};
 $('byQ').onclick=()=>{MODE='q';drawDay()}; $('byS').onclick=()=>{MODE='s';drawDay()};
 $('bigBtn').onclick=()=>$('detail').classList.toggle('big');
 function setDate(d){DATE=d;$('dsel').value=d;OPEN=null;drawDay()}
