@@ -5,6 +5,6 @@
 - **학생 사이트** `index.html`: 독서활동만 (번호로 접속, 1~12번 · 51~63번)
 - **교사 사이트** `home.html`: 홈 · 독서활동 기록(`teacher.html`) · 자리바꾸기(`seats.html`) 탭 (`nav.js`)
 - 자리바꾸기: `seats.html` (짝/모둠, 남녀 짝·같은 성끼리·남녀 골고루, 섞이면 안 되는 사이, 앞자리, 고정, 기록 — 이 기기 브라우저에 저장)
-- 책·질문 내용: `books.js`
+- 책·질문 내용: `books.js` · 오늘의 고사성어: `idioms.js` (날짜마다 하나, 학생 화면·교사 홈에 표시)
 - 제출 기록: 파이어베이스 `morning-activities` 프로젝트의 `reading/날짜/번호`
 - `database.rules.json`: 기존 아침활동(morning) + 독서(reading) 규칙을 합친 것. 파이어베이스 콘솔 → Realtime Database → 규칙에 통째로 붙여 넣고 게시

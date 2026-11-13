@@ -51,6 +51,7 @@ textarea.ans{min-height:130px;line-height:1.8;font-size:19px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="books.js"></script>
+<script src="idioms.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
@@ -117,7 +118,7 @@ async function main(){
     return;
   }
   bindTimer();
-  $('body').innerHTML=`
+  $('body').innerHTML=`${idiomCardHTML(DATE)}
    <div class="card">
      <div class="book"><div class="cover">${b.e}</div>
        <div><div class="t">${esc(b.t)}</div><div class="a">${esc(b.a)} 지음</div><div class="i">${esc(b.i)}</div></div></div>
