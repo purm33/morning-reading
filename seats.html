@@ -61,9 +61,8 @@
 .apchip{background:#fff1ef;border:2px solid #f0b8ae;border-radius:999px;padding:1px 4px 1px 10px;font-family:'Jua';font-size:15px;display:inline-flex;align-items:center;gap:4px}
 .apchip button{border:none;background:none;color:var(--bad);font-size:16px;padding:0 4px}
 .groups{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.board.flip .groups{direction:rtl}
 .board.flip .gbox{direction:ltr}
-@media (max-width:1100px){.groups{grid-template-columns:repeat(2,1fr)}}
+
 .gbox{border-radius:20px;padding:10px 12px 14px;background:var(--gc,#eef4fb);border:2px solid rgba(0,0,0,.06)}
 .gbox .gt{font-family:'Jua';font-size:19px;margin-bottom:8px;color:#3d3a36}
 .gbox .gs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
@@ -277,7 +276,12 @@ function render(pop){
   if(S.mode==='pair'){
     for(let r=0;r<S.rows;r++){h+='<div class="rowp">';for(let p=0;p<S.cols;p++){h+='<div class="pair">';for(let k=0;k<2;k++)h+=seatHTML(r*S.cols*2+p*2+k,c,pop);h+='</div>'}h+='</div>'}
   } else {
-    let i=0;h='<div class="groups">'+sizes().map((n,g)=>{let s=`<div class="gbox" style="--gc:${GC[g%GC.length]}"><div class="gt">${g+1}모둠</div><div class="gs">`;for(let k=0;k<n;k++)s+=seatHTML(i++,c,pop);return s+'</div></div>'}).join('')+'</div>';
+    /* 모둠 배치: 세로로 1·2 (왼쪽), 3·4 (가운데), 5·6 (오른쪽) — 교탁 쪽이 앞 */
+    const sz=sizes(), start=[];let acc=0;sz.forEach(n=>{start.push(acc);acc+=n});
+    const GR=Math.max(1,Math.ceil(S.groups/3)), GCN=Math.ceil(S.groups/GR);
+    const box=g=>{let s=`<div class="gbox" style="--gc:${GC[g%GC.length]}"><div class="gt">${g+1}모둠</div><div class="gs">`;for(let k=0;k<sz[g];k++)s+=seatHTML(start[g]+k,c,pop);return s+'</div></div>'};
+    const ord=[...sz.keys()]; if(S.flip) ord.reverse();
+    h=`<div class="groups" style="grid-auto-flow:column;grid-template-rows:repeat(${GR},auto);grid-template-columns:repeat(${GCN},1fr)">`+ord.map(box).join('')+'</div>';
   }
   $('board').innerHTML=h; $('board').classList.toggle('flip',!!S.flip); $('stage').classList.toggle('showg',!!S.showG);
   drawSide();
