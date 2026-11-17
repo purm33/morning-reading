@@ -28,18 +28,6 @@
           ".validate": "$num.matches(/^([1-9]|1[0-2]|5[1-9]|6[0-3])$/) && newData.hasChildren(['a', 'ts'])"
         }
       }
-    },
-    "materials": {
-      ".read": true,
-      "owner": {
-        ".write": "auth != null && !data.exists() && newData.val() === auth.uid"
-      },
-      "items": {
-        ".write": "auth != null && auth.uid === root.child('materials/owner').val()",
-        "$id": {
-          ".validate": "!newData.exists() || (newData.child('s').isString() && newData.child('u').isString() && newData.child('t').isString())"
-        }
-      }
     }
   }
 }

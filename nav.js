@@ -1,10 +1,10 @@
 /* 공통 탭 — <body data-site="student|teacher" data-tab="..."> 에 맞춰 위쪽에 탭을 그려요
-   학생 사이트: 독서활동 · 자료실 / 교사 사이트: 홈 · 독서활동 기록 · 자료실 · 자리바꾸기 */
+   학생 사이트: 독서활동 / 교사 사이트: 홈 · 독서활동 기록 · 자료실 · 자리바꾸기 */
 (function(){
   const site=document.body.dataset.site==='teacher'?'teacher':'student';
   const SITES={
-    student:{logo:'📚',name:'우리 반 독서활동',home:'index.html',tabs:[['reading','📚','독서활동','index.html'],['materials','📂','자료실','materials.html']]},
-    teacher:{logo:'🏫',name:'우리 반 · 선생님',home:'home.html',tabs:[['home','🏠','홈','home.html'],['records','📚','독서활동 기록','teacher.html'],['materials','📂','자료실','materials.html?t'],['seats','🪑','자리바꾸기','seats.html']]}
+    student:{logo:'📚',name:'우리 반 독서활동',home:'index.html',tabs:[['reading','📚','독서활동','index.html']]},
+    teacher:{logo:'🏫',name:'우리 반 · 선생님',home:'home.html',tabs:[['home','🏠','홈','home.html'],['records','📚','독서활동 기록','teacher.html'],['materials','📂','자료실','materials.html'],['seats','🪑','자리바꾸기','seats.html']]}
   };
   const S=SITES[site], cur=document.body.dataset.tab||'';
   const css=`
