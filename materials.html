@@ -52,6 +52,7 @@
 </style>
 </head>
 <body data-tab="materials" data-site="teacher">
+<script>window.TEACHER=true; /* 교사 전용 페이지 */</script>
 <script src="nav.js"></script>
 <div class="wrap">
   <div id="warn"></div>
@@ -64,7 +65,10 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="materials.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -80,6 +84,13 @@ const SUBJ=[
  ['cre','🌈','창체','#f3ecff','#8a5cd6']
 ];
 const SI={};SUBJ.forEach(s=>SI[s[0]]=s);
+/* 처음 등록할 때 넣어 둘 기본 자료 */
+const STARTER=[
+ {s:'kor',unit:'독서 아침활동',t:'독서 아침활동 (학생 화면)',u:'https://purm33.github.io/morning-reading/',n:'11/13~12/31 평일, 줄거리 읽고 생각 쓰기'},
+ {s:'kor',unit:'독서 아침활동',t:'독서활동 기록 보기',u:'https://purm33.github.io/morning-reading/teacher.html',n:'날짜별·질문별 학생 답, 엑셀 내려받기'},
+ {s:'prac',unit:'코딩 도구',t:'메이크코드 아케이드',u:'https://arcade.makecode.com/',n:'컴퓨터에 명령하는 방법 알기 · 로봇청소기 미션'},
+ {s:'prac',unit:'코딩 도구',t:'마이크로비트 메이크코드',u:'https://makecode.microbit.org/',n:'라디오 활동: 비밀 신호, 감자 폭탄, 보물찾기'}
+];
 
 /* 링크 종류 알아보기 */
 function ytId(u){const m=String(u).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/))([\w-]{11})/);return m?m[1]:null}
@@ -102,31 +113,67 @@ function kind(u){u=String(u||'').toLowerCase();
 function host(u){try{return new URL(u).hostname.replace(/^www\./,'')}catch(e){return ''}}
 function fixUrl(u){u=String(u||'').trim();if(u&&!/^https?:\/\//i.test(u))u='https://'+u;return u}
 
-let Q='', CUR=(location.hash||'').slice(1);
+/* ---------- 파이어베이스 ---------- */
+let db=null, auth=null;
+try{firebase.initializeApp(window.FIREBASE_CONFIG);db=firebase.database();auth=firebase.auth()}catch(e){console.log(e)}
+if(!db) $('warn').innerHTML='<div class="notice err">⚠️ 서버에 연결되지 않았어요.</div>';
+
+let ITEMS={}, OWNER=null, USER=null, CUR=(location.hash||'').slice(1), Q='', EDIT=null, ADD=false, DEL=null;
 if(!SI[CUR])CUR='kor';
-const ITEMS=(window.MATERIALS||[]).map((v,i)=>({...v,o:i}));
-function list(sub){return ITEMS.filter(v=>v.s===sub)}
+const canEdit=()=>TEACHER&&USER&&OWNER&&USER.uid===OWNER;
+
+if(db){
+  db.ref('materials/items').on('value',s=>{ITEMS=s.val()||{};draw()},e=>{$('warn').innerHTML='<div class="notice err">⚠️ 자료를 불러오지 못했어요. 파이어베이스 규칙에 materials 항목이 있는지 확인해 주세요.</div>'});
+  db.ref('materials/owner').on('value',s=>{OWNER=s.val();draw()},()=>{});
+}
+if(auth) auth.onAuthStateChanged(u=>{USER=u;draw()});
+
+function list(sub){return Object.entries(ITEMS).filter(([k,v])=>v&&v.s===sub).map(([k,v])=>({k,...v})).sort((a,b)=>(a.o||0)-(b.o||0))}
 function match(v){if(!Q)return true;const q=Q.toLowerCase();return [v.t,v.n,v.unit,v.u].some(x=>String(x||'').toLowerCase().includes(q))}
 
 /* ---------- 그리기 ---------- */
 function drawSubj(){
   $('subj').innerHTML=SUBJ.map(([k,e,n,c,cc])=>{const cnt=list(k).length;
     return `<button class="sb ${k===CUR?'on':''}" data-k="${k}" style="--c:${c};--cc:${cc}"><span class="ic">${e}</span>${n}<span class="n">${cnt||''}</span></button>`}).join('');
-  $('subj').querySelectorAll('.sb').forEach(b=>b.onclick=()=>{CUR=b.dataset.k;history.replaceState(null,'',location.pathname+'#'+CUR);draw();window.scrollTo({top:0,behavior:'smooth'})});
+  $('subj').querySelectorAll('.sb').forEach(b=>b.onclick=()=>{CUR=b.dataset.k;history.replaceState(null,'',location.pathname+'#'+CUR);ADD=false;EDIT=null;draw();window.scrollTo({top:0,behavior:'smooth'})});
+}
+function authHTML(){
+  if(!TEACHER) return '';
+  if(!auth) return '';
+  if(!USER) return `<span class="auth"><button class="btn" id="login">🔐 구글로 로그인해서 자료 넣기</button></span>`;
+  const who=esc(USER.email||'');
+  if(!OWNER) return `<span class="auth"><button class="btn solid" id="claim">이 계정을 선생님 계정으로 등록</button><button class="btn" id="logout">로그아웃</button></span>`;
+  if(USER.uid!==OWNER) return `<span class="auth"><span class="muted">${who} 은(는) 편집 권한이 없어요</span><button class="btn" id="logout">로그아웃</button></span>`;
+  return `<span class="auth"><span class="badge">✏️ 편집 중</span><button class="btn" id="logout">로그아웃</button></span>`;
 }
 function itemHTML(v,c){
   const [e,label]=kind(v.u), y=ytId(v.u);
+  const ed=canEdit()?`<div class="ed"><button data-a="up" data-k="${v.k}" title="앞으로">⬆</button><button data-a="dn" data-k="${v.k}" title="뒤로">⬇</button><button data-a="ed" data-k="${v.k}" title="고치기">✏️</button><button data-a="del" data-k="${v.k}" title="지우기">${DEL===v.k?'❗':'🗑'}</button></div>`:'';
   return `<a class="it" href="${esc(v.u)}" target="_blank" rel="noopener" style="--c:${c[3]};--cc:${c[4]}">
     ${y?`<div class="thumb" style="background-image:url('https://img.youtube.com/vi/${y}/mqdefault.jpg')"></div>`:''}
-    <div class="bd"><div class="ty">${e}</div><div><div class="tt">${esc(v.t||label)}</div>${v.n?`<div class="nt">${esc(v.n)}</div>`:''}<div class="dm">${label} · ${esc(host(v.u))}</div></div></div></a>`;
+    <div class="bd"><div class="ty">${e}</div><div><div class="tt">${esc(v.t||label)}</div>${v.n?`<div class="nt">${esc(v.n)}</div>`:''}<div class="dm">${label} · ${esc(host(v.u))}</div></div></div>${ed}</a>`;
+}
+function formHTML(c){
+  const v=EDIT?ITEMS[EDIT]:{}; const units=[...new Set(list(CUR).map(x=>x.unit).filter(Boolean))];
+  return `<div class="form" style="--cc:${c[4]}">
+    <div style="font-family:Jua;font-size:18px;margin-bottom:8px">${EDIT?'✏️ 자료 고치기':'➕ 새 자료 넣기'} · ${c[1]} ${c[2]}</div>
+    <div class="g">
+      <div><label>단원·묶음 (비워도 돼요)</label><input type="text" id="fUnit" list="unitList" value="${esc(v.unit||'')}" placeholder="예: 1. 소수의 곱셈"><datalist id="unitList">${units.map(u=>`<option value="${esc(u)}">`).join('')}</datalist></div>
+      <div><label>링크 주소 *</label><input type="text" id="fUrl" value="${esc(v.u||'')}" placeholder="유튜브·드라이브·웹사이트 주소를 붙여 넣어요"></div>
+      <div><label>제목 *</label><input type="text" id="fTitle" value="${esc(v.t||'')}" placeholder="예: 소수의 곱셈 개념 영상"></div>
+      <div><label>한 줄 설명</label><input type="text" id="fNote" value="${esc(v.n||'')}" placeholder="예: 3차시 복습용 · 5분"></div>
+    </div>
+    <div class="row"><button class="btn solid" id="fSave">${EDIT?'고친 내용 저장':'넣기'}</button><button class="btn" id="fCancel">닫기</button><span class="muted" id="fKind" style="font-size:14px"></span></div>
+  </div>`;
 }
 function draw(){
   drawSubj();
   const c=SI[CUR], items=list(CUR).filter(match);
   let h=`<div class="head"><div class="t" style="--c:${c[3]}"><span class="ic">${c[1]}</span>${c[2]} 자료실</div>
-    <div class="right"><input type="text" class="search" id="q" placeholder="🔍 자료 찾기" value="${esc(Q)}"></div></div>`;
+    <div class="right"><input type="text" class="search" id="q" placeholder="🔍 자료 찾기" value="${esc(Q)}">${authHTML()}</div></div>`;
+  if(canEdit()) h+= (ADD||EDIT)?formHTML(c):`<div style="margin-bottom:10px"><button class="btn solid" id="add" style="background:${c[4]};border-color:${c[4]}">➕ ${c[2]} 자료 넣기</button></div>`;
   if(!items.length){
-    h+=`<div class="empty"><div class="big">${c[1]}</div>${Q?'찾는 자료가 없어요.':'아직 자료가 없어요.<br><span style="font-size:15px">넣고 싶은 링크를 Claude에게 알려 주시면 이 칸에 넣어 드려요.</span>'}</div>`;
+    h+=`<div class="empty"><div class="big">${c[1]}</div>${Q?'찾는 자료가 없어요.':(canEdit()?'아직 자료가 없어요. ➕ 버튼으로 첫 자료를 넣어 보세요!':'아직 자료가 없어요. 오른쪽 위에서 구글로 로그인하면 자료를 넣을 수 있어요.')}</div>`;
   } else {
     const groups=[];const gi={};
     items.forEach(v=>{const u=v.unit||'';if(!(u in gi)){gi[u]=groups.length;groups.push([u,[]])}groups[gi[u]][1].push(v)});
@@ -138,6 +185,39 @@ function draw(){
 }
 function bind(){
   const q=$('q'); q.oninput=()=>{Q=q.value;const p=q.selectionStart;draw();const nq=$('q');nq.focus();nq.setSelectionRange(p,p)};
+  if($('login')) $('login').onclick=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>toast('로그인에 실패했어요: '+(e.code||e.message)));
+  if($('logout')) $('logout').onclick=()=>auth.signOut();
+  if($('claim')) $('claim').onclick=async()=>{
+    try{await db.ref('materials/owner').set(USER.uid)}catch(e){toast('등록하지 못했어요. 이미 다른 계정이 등록돼 있을 수 있어요');return}
+    if(!Object.keys(ITEMS).length){const t=Date.now();const up={};STARTER.forEach((v,i)=>{up[db.ref('materials/items').push().key]={...v,o:i+1,ts:t}});
+      try{await db.ref('materials/items').update(up)}catch(e){}}
+    toast('선생님 계정으로 등록했어요 ✏️ 이제 자료를 넣을 수 있어요')};
+  if($('add')) $('add').onclick=()=>{ADD=true;EDIT=null;draw();$('fUrl').focus()};
+  if($('fCancel')) $('fCancel').onclick=()=>{ADD=false;EDIT=null;draw()};
+  if($('fUrl')){const showK=()=>{const u=fixUrl($('fUrl').value);$('fKind').textContent=u?('알아본 종류: '+kind(u).join(' ')):''};$('fUrl').oninput=showK;showK()}
+  if($('fSave')) $('fSave').onclick=save;
+  document.querySelectorAll('.it .ed button').forEach(b=>b.onclick=ev=>{ev.preventDefault();ev.stopPropagation();act(b.dataset.a,b.dataset.k)});
+}
+async function save(){
+  const u=fixUrl($('fUrl').value), t=$('fTitle').value.trim();
+  if(!u||!host(u)){toast('링크 주소를 확인해 주세요');return}
+  if(!t){toast('제목을 넣어 주세요');return}
+  const data={s:CUR,u,t,n:$('fNote').value.trim(),unit:$('fUnit').value.trim()};
+  try{
+    if(EDIT){await db.ref('materials/items/'+EDIT).update(data);toast('고쳤어요')}
+    else{const L=list(CUR);data.o=(L.length?Math.max(...L.map(x=>x.o||0)):0)+1;data.ts=Date.now();await db.ref('materials/items').push(data);toast('넣었어요 👍')}
+    ADD=false;EDIT=null;draw();
+  }catch(e){toast('저장하지 못했어요. 로그인 상태를 확인해 주세요')}
+}
+async function act(a,k){
+  if(a==='ed'){EDIT=k;ADD=false;draw();window.scrollTo({top:0,behavior:'smooth'});return}
+  if(a==='del'){
+    if(DEL!==k){DEL=k;draw();toast('한 번 더 누르면 지워져요');setTimeout(()=>{if(DEL===k){DEL=null;draw()}},3000);return}
+    DEL=null;await db.ref('materials/items/'+k).remove();toast('지웠어요');return}
+  const v=ITEMS[k], unit=v.unit||'', L=list(CUR).filter(x=>(x.unit||'')===unit), i=L.findIndex(x=>x.k===k), j=a==='up'?i-1:i+1;
+  if(j<0||j>=L.length)return;
+  const o1=L[i].o||0,o2=L[j].o||0;
+  await db.ref().update({[`materials/items/${L[i].k}/o`]:o2===o1?o1+(a==='up'?-1:1):o2,[`materials/items/${L[j].k}/o`]:o1});
 }
 draw();
 </script>
