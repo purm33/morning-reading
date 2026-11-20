@@ -68,6 +68,7 @@ table.acc tr.rate td{font-family:'Jua';background:#fbf3ec}
       <button class="btn" id="pvBtn">👀 학생 화면 미리보기</button>
     </div>
     <div class="card" id="bookCard"></div>
+    <div class="card" id="vidCard"></div>
     <div class="card">
       <div class="sum" id="sum"></div>
       <div class="muted" style="font-size:15px;margin:4px 0 10px">번호를 누르면 그 학생의 답만 볼 수 있어요. 아래 숫자는 세 답의 글자 수 합계예요.</div>
@@ -94,6 +95,7 @@ table.acc tr.rate td{font-family:'Jua';background:#fbf3ec}
 <div class="toast" id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="firebase-config.js"></script>
@@ -105,7 +107,8 @@ function tm(ts){if(!ts)return '';const d=new Date(ts);return `${d.getHours()}:${
 function short(k){const d=dObj(k);return `${d.getMonth()+1}/${d.getDate()}`}
 
 let db=null;
-try{ if(window.FIREBASE_CONFIG){firebase.initializeApp(window.FIREBASE_CONFIG);db=firebase.database();} }catch(e){}
+let auth=null;
+try{ if(window.FIREBASE_CONFIG){firebase.initializeApp(window.FIREBASE_CONFIG);db=firebase.database();auth=firebase.auth();} }catch(e){}
 if(!db) $('warn').innerHTML='<div class="notice err">⚠️ 파이어베이스 설정이 없어서 제출 현황을 불러올 수 없어요.</div>';
 
 const N=STUDENTS.length;
@@ -119,6 +122,52 @@ if(db){
     e=>{$('live').textContent='불러오기 실패';$('warn').innerHTML='<div class="notice err">⚠️ 기록을 불러오지 못했어요. 파이어베이스 데이터베이스 규칙에 reading 항목이 들어갔는지 확인해 주세요.</div>'});
 }
 
+/* ---------- 제출 뒤 보여 줄 영상 (날짜마다 하나) ---------- */
+let VID={}, OWNER=null, USER=null, VEDIT=false;
+if(db){
+  db.ref('reading_video').on('value',s=>{VID=s.val()||{};if(VIEW==='day')drawVid()},()=>{});
+  db.ref('materials/owner').on('value',s=>{OWNER=s.val();if(VIEW==='day')drawVid()},()=>{});
+}
+if(auth) auth.onAuthStateChanged(u=>{USER=u;if(VIEW==='day')drawVid()});
+const isOwner=()=>USER&&OWNER&&USER.uid===OWNER;
+function drawVid(){
+  const el=$('vidCard'); if(!el) return; const v=VID[DATE];
+  let h=`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">🎬 제출하면 보여 줄 영상</h3><span class="muted" style="font-size:14px">학생이 제출을 마치면 화면 아래에 나타나요</span></div>`;
+  if(v&&!VEDIT){
+    const id=ytId(v.u);
+    h+=`<div style="display:flex;gap:14px;align-items:center;margin-top:10px;flex-wrap:wrap">
+      ${id?`<a href="${esc(v.u)}" target="_blank" rel="noopener"><img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" style="width:200px;border-radius:10px;display:block"></a>`:''}
+      <div><div style="font-family:Jua;font-size:18px">${esc(v.t||'(제목 없음)')}</div><a href="${esc(v.u)}" target="_blank" rel="noopener" style="font-size:14px;color:var(--muted);word-break:break-all">${esc(v.u)}</a>
+      ${isOwner()?`<div style="margin-top:8px;display:flex;gap:6px"><button class="btn" id="vEdit">✏️ 바꾸기</button><button class="btn" id="vDel">🗑 지우기</button></div>`:''}</div></div>`;
+  } else if(!v&&!isOwner()){
+    h+=`<div class="muted" style="margin-top:8px">아직 영상이 없어요.</div>`;
+  }
+  if(isOwner()&&(VEDIT||!v)){
+    h+=`<div style="display:grid;grid-template-columns:2fr 1fr auto;gap:8px;margin-top:10px;align-items:center">
+      <input type="text" id="vUrl" placeholder="유튜브 링크를 붙여 넣어요" value="${esc(v?v.u:'')}" style="font-size:16px;padding:7px 10px">
+      <input type="text" id="vTitle" placeholder="제목 (예: 영화 '원더' 예고편)" value="${esc(v?v.t:'')}" style="font-size:16px;padding:7px 10px">
+      <span style="display:flex;gap:6px"><button class="btn solid" id="vSave">저장</button>${v?'<button class="btn" id="vCancel">취소</button>':''}</span></div>`;
+  }
+  if(!auth){} else if(!USER){
+    h+=`<div style="margin-top:10px"><button class="btn" id="vLogin">🔐 구글로 로그인해서 영상 넣기</button></div>`;
+  } else if(!OWNER){
+    h+=`<div style="margin-top:10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="btn solid" id="vClaim">이 계정을 선생님 계정으로 등록</button><span class="muted" style="font-size:14px">자료실과 같은 선생님 계정으로 쓰여요</span></div>`;
+  } else if(!isOwner()){
+    h+=`<div class="muted" style="margin-top:10px;font-size:14px">${esc(USER.email||'')} 은(는) 편집 권한이 없어요. <button class="btn" id="vOut">로그아웃</button></div>`;
+  }
+  el.innerHTML=h;
+  const on=(id,f)=>{if($(id))$(id).onclick=f};
+  on('vLogin',()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>toast('로그인에 실패했어요: '+(e.code||e.message))));
+  on('vOut',()=>auth.signOut());
+  on('vClaim',()=>db.ref('materials/owner').set(USER.uid).then(()=>toast('선생님 계정으로 등록했어요')).catch(()=>toast('등록하지 못했어요')));
+  on('vEdit',()=>{VEDIT=true;drawVid()}); on('vCancel',()=>{VEDIT=false;drawVid()});
+  on('vDel',async()=>{const b=$('vDel');if(!b.dataset.ok){b.dataset.ok=1;b.textContent='❗ 한 번 더';setTimeout(()=>{if($('vDel')){$('vDel').textContent='🗑 지우기';delete $('vDel').dataset.ok}},3000);return}
+    try{await db.ref('reading_video/'+DATE).remove();toast('지웠어요')}catch(e){toast('지우지 못했어요')}});
+  on('vSave',async()=>{let u=$('vUrl').value.trim();if(u&&!/^https?:\/\//i.test(u))u='https://'+u;
+    if(!u){toast('링크를 넣어 주세요');return}
+    try{await db.ref('reading_video/'+DATE).set({u,t:$('vTitle').value.trim(),ts:Date.now()});VEDIT=false;toast('저장했어요 🎬')}catch(e){toast('저장하지 못했어요. 파이어베이스 규칙을 확인해 주세요')}});
+}
+
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{VIEW=b.dataset.v;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));$('vDay').hidden=VIEW!=='day';$('vAcc').hidden=VIEW!=='acc';redraw()});
 function redraw(){ VIEW==='day'?drawDay():drawAcc(); }
 
@@ -129,13 +178,14 @@ $('tday').onclick=()=>setDate(defaultDate());
 $('pvBtn').onclick=()=>{location.href='index.html#p'+DATE.replace(/-/g,'')};
 $('byQ').onclick=()=>{MODE='q';drawDay()}; $('byS').onclick=()=>{MODE='s';drawDay()};
 $('bigBtn').onclick=()=>$('detail').classList.toggle('big');
-function setDate(d){DATE=d;$('dsel').value=d;OPEN=null;drawDay()}
+function setDate(d){DATE=d;$('dsel').value=d;OPEN=null;VEDIT=false;drawDay()}
 
 function drawDay(){
   const b=SCHED[DATE], S=ALL[DATE]||{};
   $('bookCard').innerHTML=`<div class="bookline"><span class="e">${b.e}</span><div><div class="t">${esc(b.t)}</div><div class="muted">${esc(b.a)} · ${esc(b.i)}</div></div></div>
     <details style="margin-top:8px"><summary style="cursor:pointer;font-family:Jua;color:var(--read)">줄거리 · 질문 보기</summary>
     ${b.s.map(p=>`<p style="line-height:1.9">${esc(p)}</p>`).join('')}<ol>${b.q.map(q=>`<li>${esc(q)}</li>`).join('')}</ol></details>`;
+  drawVid();
   const done=Object.keys(S).filter(n=>STUDENTS.includes(n)).sort((a,b)=>a-b);
   const tot=n=>S[n]&&S[n].a?S[n].a.reduce((x,y)=>x+countChars(y),0):0;
   $('sum').innerHTML=`${done.length} / ${N}명 제출 <small>(미제출: ${STUDENTS.filter(n=>!S[n]).join(', ')||'없음'})</small>`;

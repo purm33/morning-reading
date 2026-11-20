@@ -130,15 +130,22 @@ async function main(){
        <textarea class="ans" id="a${j}" placeholder="나는 ~라고 생각해요. 왜냐하면 ~"></textarea><div class="cnt" id="c${j}"></div></div>`).join('')}
      ${PREVIEW?`<div class="submitbar"><button class="btn" disabled>제출하기</button><span class="muted">👀 미리보기에서는 제출되지 않아요</span></div>`
        :`<div class="submitbar"><button class="btn solid" id="send">제출하기</button><span id="sentMsg" class="muted"></span></div>`}
-   </div>`;
+   </div>
+   <div id="vidBox"></div>`;
   const upd=j=>{const n=countChars($('a'+j).value),c=$('c'+j);c.textContent=`${n}자${n>=MIN_CHARS?' ✅':` / ${MIN_CHARS}자 이상`}`;c.className='cnt'+(n>=MIN_CHARS?' ok':'')};
   b.q.forEach((_,j)=>{const t=$('a'+j);if(!PREVIEW)t.value=LS.get(draftKey(j))||'';t.oninput=()=>{if(!PREVIEW)LS.set(draftKey(j),t.value);upd(j)};upd(j)});
-  if(PREVIEW) return;
+  if(PREVIEW){ if(db){try{const s=await db.ref(`reading_video/${DATE}`).get();if(s.exists())$('vidBox').innerHTML=videoCardHTML(s.val(),{note:'👀 미리보기: 학생에게는 제출한 뒤에 이 영상이 보여요.'})}catch(e){}} return; }
   /* 이전 제출 불러오기 */
   if(db){try{const s=await db.ref(`reading/${DATE}/${NUM}`).get();if(s.exists()){const v=s.val();b.q.forEach((_,j)=>{const t=$('a'+j);if(!t.value&&v.a)t.value=v.a[j]||'';upd(j)});markSent(v.ts)}}catch(e){}}
   $('send').onclick=send;
 }
-function markSent(ts){$('sentMsg').innerHTML=`<span class="sent">✅ 제출했어요 ${fmtTime(ts)}</span> · 고쳐서 다시 제출할 수 있어요`}
+function markSent(ts){$('sentMsg').innerHTML=`<span class="sent">✅ 제출했어요 ${fmtTime(ts)}</span> · 고쳐서 다시 제출할 수 있어요`;showVideo()}
+/* 제출한 학생에게만 오늘의 보너스 영상 보여 주기 */
+async function showVideo(){
+  if(!db||!$('vidBox')||$('vidBox').dataset.on) return;
+  try{const s=await db.ref(`reading_video/${DATE}`).get();
+    if(s.exists()&&$('vidBox')){$('vidBox').dataset.on='1';$('vidBox').innerHTML=videoCardHTML(s.val());}}catch(e){}
+}
 async function send(){
   const b=SCHED[DATE];
   const a=b.q.map((_,j)=>$('a'+j).value.trim());

@@ -40,6 +40,13 @@
           ".validate": "!newData.exists() || (newData.child('s').isString() && newData.child('u').isString() && newData.child('t').isString())"
         }
       }
+    },
+    "reading_video": {
+      ".read": true,
+      "$date": {
+        ".write": "auth != null && auth.uid === root.child('materials/owner').val()",
+        ".validate": "!newData.exists() || newData.child('u').isString()"
+      }
     }
   }
 }

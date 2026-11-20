@@ -294,3 +294,31 @@ function dObj(k){const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)
 function nice(k){const d=dObj(k);return `${d.getMonth()+1}월 ${d.getDate()}일 ${WK[d.getDay()]}요일`}
 function countChars(t){return String(t||'').replace(/\s/g,'').length}
 function countSentences(t){return String(t||'').split(/[.?!。]+/).map(s=>s.trim()).filter(s=>s.length>1).length}
+
+/* ---------- 제출 뒤 보여 줄 영상 (교사 화면에서 날짜마다 넣어요 · 파이어베이스 reading_video/날짜) ---------- */
+function ytId(u){const m=String(u||'').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/))([\w-]{11})/);return m?m[1]:null}
+function videoCardHTML(v,opt){
+  if(!v||!v.u) return '';
+  const id=ytId(v.u), title=v.t||'오늘의 책과 함께 볼 영상';
+  return `<div class="card vcard">
+    <div class="vhead">🎉 <b>제출 완료!</b> 오늘의 보너스 영상</div>
+    <a class="vlink" href="${esc(v.u)}" target="_blank" rel="noopener">
+      ${id?`<span class="vthumb" style="background-image:url('https://img.youtube.com/vi/${id}/hqdefault.jpg')"><span class="vplay">▶</span></span>`:''}
+      <span class="vtitle">🎬 ${esc(title)}</span>
+      <span class="vsub">누르면 새 창에서 열려요</span>
+    </a>
+    ${opt&&opt.note?`<div class="vnote">${esc(opt.note)}</div>`:''}
+  </div>`;
+}
+const VIDEO_CSS=`
+.vcard{background:linear-gradient(160deg,#fffdf6,#ffeedd);border-color:#f2c9a0;animation:vin .5s ease}
+@keyframes vin{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+.vcard .vhead{font-family:'Jua';font-size:22px;color:#c2410c;margin-bottom:10px}
+.vcard .vlink{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--ink);max-width:520px}
+.vcard .vthumb{position:relative;display:block;aspect-ratio:16/9;border-radius:14px;background:#000 center/cover no-repeat;box-shadow:0 4px 0 #e8cdb0}
+.vcard .vplay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:rgba(255,0,0,.88);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px}
+.vcard .vlink:hover .vplay{transform:translate(-50%,-50%) scale(1.1)}
+.vcard .vtitle{font-family:'Jua';font-size:20px}
+.vcard .vsub{font-size:14px;color:var(--muted)}
+.vcard .vnote{margin-top:8px;font-size:14px;color:var(--muted)}`;
+(function(){if(typeof document==='undefined'||!document.head)return;const st=document.createElement('style');st.textContent=VIDEO_CSS;document.head.appendChild(st)})();
