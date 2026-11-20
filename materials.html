@@ -74,22 +74,21 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2400)}
 
-/* 과목 (창체 포함) — 순서·색은 여기서 바꿔요 */
+/* 활동 — 순서·색은 여기서 바꿔요 (코드, 아이콘, 이름, 연한 색, 진한 색) */
 const SUBJ=[
- ['kor','📖','국어','#fde8e4','#d9644f'], ['math','🔢','수학','#ece2f6','#7a4bb3'],
- ['soc','🏛️','사회','#fff1d6','#c98a12'], ['sci','🔬','과학','#e3f3e6','#2e9d5b'],
- ['eng','🔤','영어','#e2eefb','#2f6db8'], ['mor','🌱','도덕','#eaf6dc','#5c9a2c'],
- ['prac','💻','실과','#e5f6f6','#1f8f8f'], ['mus','🎵','음악','#fde6f1','#c0457e'],
- ['art','🎨','미술','#fff0e0','#e07a1f'], ['pe','⚽','체육','#e6f0ff','#3b6fd6'],
- ['cre','🌈','창체','#f3ecff','#8a5cd6']
+ ['morning','🌅','아침활동','#fff1d6','#d97706'],
+ ['arcade','🎮','아케이드','#e5f6f6','#1f8f8f'],
+ ['microbit','📡','마이크로비트','#e2eefb','#2f6db8'],
+ ['minecraft','⛏️','마인크래프트','#e3f3e6','#2e9d5b']
 ];
-const SI={};SUBJ.forEach(s=>SI[s[0]]=s);
+const ETC=['etc','🗂️','기타','#efe9e1','#8a7d6c'];  /* 예전 과목에 넣었던 자료가 있을 때만 보여요 */
+const SI={};SUBJ.forEach(s=>SI[s[0]]=s);SI.etc=ETC;
 /* 처음 등록할 때 넣어 둘 기본 자료 */
 const STARTER=[
- {s:'kor',unit:'독서 아침활동',t:'독서 아침활동 (학생 화면)',u:'https://purm33.github.io/morning-reading/',n:'11/13~12/31 평일, 줄거리 읽고 생각 쓰기'},
- {s:'kor',unit:'독서 아침활동',t:'독서활동 기록 보기',u:'https://purm33.github.io/morning-reading/teacher.html',n:'날짜별·질문별 학생 답, 엑셀 내려받기'},
- {s:'prac',unit:'코딩 도구',t:'메이크코드 아케이드',u:'https://arcade.makecode.com/',n:'컴퓨터에 명령하는 방법 알기 · 로봇청소기 미션'},
- {s:'prac',unit:'코딩 도구',t:'마이크로비트 메이크코드',u:'https://makecode.microbit.org/',n:'라디오 활동: 비밀 신호, 감자 폭탄, 보물찾기'}
+ {s:'morning',unit:'독서 아침활동',t:'독서 아침활동 (학생 화면)',u:'https://purm33.github.io/morning-reading/',n:'11/13~12/31 평일, 줄거리 읽고 생각 쓰기'},
+ {s:'morning',unit:'독서 아침활동',t:'독서활동 기록 보기',u:'https://purm33.github.io/morning-reading/teacher.html',n:'날짜별·질문별 학생 답, 엑셀 내려받기'},
+ {s:'arcade',unit:'코딩 도구',t:'메이크코드 아케이드',u:'https://arcade.makecode.com/',n:'컴퓨터에 명령하는 방법 알기 · 로봇청소기 미션'},
+ {s:'microbit',unit:'코딩 도구',t:'마이크로비트 메이크코드',u:'https://makecode.microbit.org/',n:'라디오 활동: 비밀 신호, 감자 폭탄, 보물찾기'}
 ];
 
 /* 링크 종류 알아보기 */
@@ -119,7 +118,7 @@ try{firebase.initializeApp(window.FIREBASE_CONFIG);db=firebase.database();auth=f
 if(!db) $('warn').innerHTML='<div class="notice err">⚠️ 서버에 연결되지 않았어요.</div>';
 
 let ITEMS={}, OWNER=null, USER=null, CUR=(location.hash||'').slice(1), Q='', EDIT=null, ADD=false, DEL=null;
-if(!SI[CUR])CUR='kor';
+if(!SI[CUR])CUR='morning';
 const canEdit=()=>TEACHER&&USER&&OWNER&&USER.uid===OWNER;
 
 if(db){
@@ -128,12 +127,18 @@ if(db){
 }
 if(auth) auth.onAuthStateChanged(u=>{USER=u;draw()});
 
-function list(sub){return Object.entries(ITEMS).filter(([k,v])=>v&&v.s===sub).map(([k,v])=>({k,...v})).sort((a,b)=>(a.o||0)-(b.o||0))}
+/* 예전 과목 코드로 들어간 자료는 알맞은 활동으로 옮겨 보여 줘요 */
+function cat(v){if(SUBJ.some(x=>x[0]===v.s))return v.s; const u=String(v.u||'').toLowerCase();
+  if(u.includes('microbit'))return 'microbit'; if(u.includes('arcade.makecode'))return 'arcade';
+  if(u.includes('mcworld')||String(v.t||'').includes('마크')||String(v.t||'').includes('마인크래프트'))return 'minecraft';
+  if(v.s==='kor'&&String(v.unit||'').includes('아침'))return 'morning'; return 'etc'}
+function list(sub){return Object.entries(ITEMS).filter(([k,v])=>v&&cat(v)===sub).map(([k,v])=>({k,...v})).sort((a,b)=>(a.o||0)-(b.o||0))}
 function match(v){if(!Q)return true;const q=Q.toLowerCase();return [v.t,v.n,v.unit,v.u].some(x=>String(x||'').toLowerCase().includes(q))}
 
 /* ---------- 그리기 ---------- */
 function drawSubj(){
-  $('subj').innerHTML=SUBJ.map(([k,e,n,c,cc])=>{const cnt=list(k).length;
+  const SHOW=list('etc').length?[...SUBJ,ETC]:SUBJ;
+  $('subj').innerHTML=SHOW.map(([k,e,n,c,cc])=>{const cnt=list(k).length;
     return `<button class="sb ${k===CUR?'on':''}" data-k="${k}" style="--c:${c};--cc:${cc}"><span class="ic">${e}</span>${n}<span class="n">${cnt||''}</span></button>`}).join('');
   $('subj').querySelectorAll('.sb').forEach(b=>b.onclick=()=>{CUR=b.dataset.k;history.replaceState(null,'',location.pathname+'#'+CUR);ADD=false;EDIT=null;draw();window.scrollTo({top:0,behavior:'smooth'})});
 }
